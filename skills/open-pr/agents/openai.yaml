@@ -1,0 +1,4 @@
+interface:
+  display_name: "Open PR"
+  short_description: "Safely turn current work into a GitHub pull request"
+  default_prompt: "Use $open-pr to safely turn the current work into a review-ready GitHub pull request."

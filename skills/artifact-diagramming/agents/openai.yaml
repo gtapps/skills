@@ -1,0 +1,4 @@
+interface:
+  display_name: "Artifact Diagramming"
+  short_description: "Draw inline-SVG figures that show the real mechanism"
+  default_prompt: "Use $artifact-diagramming to draw the mechanism as an inline SVG figure that reads in both themes."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Probe Claude Harness"
+  short_description: "Empirically test an interactive Claude Code harness"
+  default_prompt: "Use $probe to empirically test this Claude Code harness behavior in a real interactive session."

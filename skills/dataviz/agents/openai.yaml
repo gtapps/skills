@@ -1,0 +1,4 @@
+interface:
+  display_name: "Data Visualization"
+  short_description: "Charts, dashboards, and validated accessible palettes"
+  default_prompt: "Use $dataviz to pick the chart form and build a validated, colorblind-safe palette."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Artifact Design"
+  short_description: "Design self-contained HTML pages and documents with real craft"
+  default_prompt: "Use $artifact-design to give this page a deliberate visual identity : palette, type, layout, and both themes."

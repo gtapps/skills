@@ -1,0 +1,4 @@
+interface:
+  display_name: "Review Findings"
+  short_description: "Verify external review findings against current code"
+  default_prompt: "Use $review-findings to verify these external findings against the current code before acting on them."

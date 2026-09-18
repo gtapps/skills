@@ -1,0 +1,40 @@
+{
+  "skill_name": "task-report",
+  "evals": [
+    {
+      "id": 0,
+      "name": "bug-fix-debrief",
+      "prompt": "You just finished a task in the git repo at {FIXTURE_BUGFIX}: the user reported that page 1 of the users API returned the second page of results. You fixed the off-by-one in src/pagination.py (pages are now 1-indexed), made page_count round up, and added tests/test_pagination.py; you ran pytest and got '2 passed in 0.03s'. The changes are uncommitted. The user now says: 'nice — wrap this up as a report I can review'. Generate the task report.",
+      "expected_output": "An HTML report built via build_report.py (not hand-written diff HTML): done-banner with root cause, verification section quoting the pytest output with a VERIFIED badge, a caveat about 0-indexed callers or similar, file-notes with priorities (pagination.py red/high), script-rendered diffs, lockfile demoted to stat-line if present.",
+      "files": []
+    },
+    {
+      "id": 1,
+      "name": "migration-scaling",
+      "prompt": "You just finished a task in the git repo at {FIXTURE_MIGRATION}: renaming the logging API from log_msg(level, text) to log(text, level=...) across the codebase. 14 files were mechanically rewritten with the same pattern; 2 files (src/legacy_adapter.py and src/cli.py) needed hand-treatment because they built calls dynamically. You verified with 'grep -rn log_msg src/' returning no matches, but did not run the test suite. The changes are uncommitted. The user says: 'show me what you changed'. Generate the task report.",
+      "expected_output": "Report that scales: pattern-not-instances framing, the 2 hand-treated files red-flagged and leading the review guide, mechanical files gray, grep completeness check shown as verification, test suite explicitly marked NOT VERIFIED, no 16 expanded diffs.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "research-no-code",
+      "prompt": "You just finished investigating (in the repo at {FIXTURE_RESEARCH}) why the nightly export job is slow. You found the root cause: the exporter calls fetch_row() once per record inside a loop (src/export.py line 41) instead of batch-fetching; ~40k round-trips per run. You changed no code. You are moderately confident (didn't profile, inferred from reading the code and the job logs the user pasted earlier). The user says: 'write this up as a handoff report'. Generate the task report.",
+      "expected_output": "Answer-first report using --base none: banner states the root cause, evidence chain with file:line citations, confidence level and what was NOT checked (no profiling) in caveats, recommended fix as a copy-as-prompt follow-up, and NO empty files-changed/diff sections.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "name": "non-git-fallback",
+      "prompt": "You just finished a task in the directory at {FIXTURE_NONGIT}, which is NOT a git repository: you edited config/settings.yaml (raised the worker timeout from 30 to 120) and scripts/deploy.sh (added a retry loop around the health check). You ran 'bash -n scripts/deploy.sh' which exited 0; nothing else was verified. The user says: 'make me a report of this work'. Generate the task report.",
+      "expected_output": "Report built with --base none --changed config/settings.yaml scripts/deploy.sh: file list labeled as session memory / not verified against version control, current-content snapshots (not a fabricated unified diff), the real before/after values (30 -> 120, retry loop) in the before-after narrative section only, bash -n shown as the sole verification, and a suggestion to git init as a follow-up.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "name": "committed-work-baseline",
+      "prompt": "You just finished a task in the git repo at {FIXTURE_COMMITTED}: you added rate limiting to the API and committed your work as you went — two commits, 'feat: add rate limiter middleware' and 'test: rate limiter coverage'. Before your work, an unrelated commit 'docs: update readme' by the user sits on the branch. The working tree is clean; pytest ran after your last commit with '5 passed'. The user says: 'summarize what you did as a report'. Generate the task report.",
+      "expected_output": "The baseline must be the parent of 'feat: add rate limiter middleware' (NOT merge-base or HEAD~3): the report covers exactly the two task commits, lists them in the commits-since-baseline block, and does NOT include the readme change in the diff or files table. Verification quotes the pytest output.",
+      "files": []
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["status", "stop_reason", "blocked_command", "steps", "closing_verification", "files_touched", "notes"],
+  "properties": {
+    "status": { "type": "string", "enum": ["done", "blocked", "stopped", "failed"] },
+    "stop_reason": { "type": ["string", "null"] },
+    "blocked_command": { "type": ["string", "null"] },
+    "steps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["n", "title", "verify", "exit_code", "passed"],
+        "properties": {
+          "n": { "type": "integer" },
+          "title": { "type": "string" },
+          "verify": { "type": "string" },
+          "exit_code": { "type": "integer" },
+          "passed": { "type": "boolean" }
+        }
+      }
+    },
+    "closing_verification": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["command", "exit_code"],
+        "properties": {
+          "command": { "type": "string" },
+          "exit_code": { "type": "integer" }
+        }
+      }
+    },
+    "files_touched": { "type": "array", "items": { "type": "string" } },
+    "notes": { "type": "string" }
+  }
+}

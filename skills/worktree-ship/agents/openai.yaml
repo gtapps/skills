@@ -1,0 +1,4 @@
+interface:
+  display_name: "Worktree Ship"
+  short_description: "Implement an approved plan in a worktree and open a PR"
+  default_prompt: "Use $worktree-ship to implement the approved plan in a worktree and open a review-ready PR."

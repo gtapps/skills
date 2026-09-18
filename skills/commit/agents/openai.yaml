@@ -1,0 +1,4 @@
+interface:
+  display_name: "Commit"
+  short_description: "Clean and commit only the intended staged changes"
+  default_prompt: "Use $commit to clean up and commit only the intended changes without pushing."

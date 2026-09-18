@@ -1,0 +1,4 @@
+interface:
+  display_name: "Plan Implementation"
+  short_description: "Prepare settled decisions for an executor missing context"
+  default_prompt: "Use $plan-implementation to prepare a self-contained implementation contract from this settled plan when the executor needs it."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Final Plan Check"
+  short_description: "Adversarially sanity-check a drafted implementation plan"
+  default_prompt: "Use $final-plan-check to give this drafted implementation plan one final evidence-backed critique."

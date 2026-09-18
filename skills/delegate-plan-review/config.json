@@ -1,0 +1,6 @@
+{
+  "codex":   { "model": null, "effort": null },
+  "grok":    { "model": null, "effort": null },
+  "copilot": { "model": null, "effort": null },
+  "claude":  { "model": null, "effort": null }
+}

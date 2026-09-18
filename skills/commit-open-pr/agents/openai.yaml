@@ -1,0 +1,4 @@
+interface:
+  display_name: "Commit and Open PR"
+  short_description: "Commit scoped changes and publish a GitHub pull request"
+  default_prompt: "Use $commit-open-pr to commit the intended changes and publish them as a GitHub pull request."
