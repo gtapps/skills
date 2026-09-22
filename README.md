@@ -45,113 +45,81 @@ Examples below name their host. Use `$skill-name` in Codex or Grok CLI, and `/sk
 
 ## Install
 
-Requires Node.js/npm and your chosen agent. From this checkout, list the catalog and install a small set for committing and publishing existing work:
+With Node.js/npm installed, run this in your terminal:
 
 ```bash
-npx skills add . --list
-
-# Codex
-npx skills add . --skill commit commit-push open-pr simplify --agent codex --global
-
-# Claude Code, using its bundled /simplify
-npx skills add . --skill commit commit-push open-pr --agent claude-code --global
+npx skills add gtapps/skills --agent claude-code --global
 ```
 
-Choose the command for your host, then start a fresh agent session. `--global` makes the skills available across projects. To install into one project, run from that project, replace `.` with this checkout's absolute path or Git URL, and omit `--global`. A published repository can also be addressed as `OWNER/REPO`; private repositories use existing Git authentication. See the [skills CLI documentation](https://github.com/vercel-labs/skills#readme).
-
-Install the other skills your chosen workflow calls, too. For example, `worktree-ship` uses `commit-open-pr`, which calls `commit` and `open-pr`. Some workflows also require skills from outside this catalog: `grilling` for `plan-pipeline`, `delta-diagrams` for behavioral diagrams, and `code-review` for `delegate-ship`. Claude's PR handoff suggests `babysit-prs`. These dependencies are not bundled automatically; follow the linked skill's requirements for tools such as GitHub CLI, authenticated executor CLIs, `jq`, Python, and tmux.
+Choose the skills you want when prompted, then start a fresh Claude Code session. Leave `simplify` unselected to keep Claude Code's bundled version. For another host, change `--agent` and check the [host restrictions](#which-agent-runs-the-skill) above. See [installation options and dependencies](#installation-options-and-dependencies) for local installs and workflow prerequisites.
 
 ## Practical examples
 
-### Investigate and implement a bug
+### Full flow in Claude Code: issue to PR
 
-Suppose issue #123 reports that uploads time out. Investigate before assuming its proposed fix is right.
-
-**In Codex:**
+Suppose issue #123 reports that uploads time out. Run these commands one at a time, reading the result before continuing:
 
 ```text
-$tackle-task https://github.com/OWNER/REPO/issues/123
-```
+# 1. Investigate the issue and read the recommendation.
+/tackle-task https://github.com/OWNER/REPO/issues/123
 
-Read the verdict. If the work is worth doing, ask the agent to draft a plan with the intended behavior, scope, and checks. Use `$final-plan-check` to critique it, resolve the findings, then approve the plan. Use `$plan-implementation` when a fresh session or executor needs a self-contained handoff; skip it when the existing plan and context suffice.
-
-With the approved plan available:
-
-```text
-$worktree-ship
-```
-
-```mermaid
-flowchart LR
-    plan["Approved plan"] --> worktree["Create or reuse worktree"]
-    worktree --> implement["Current session implements"]
-    implement --> checks["Verify and commit"]
-    checks --> pr["Open PR"]
-    pr --> review["Hand off independent review"]
-```
-
-`worktree-ship` performs implementation and checks in an isolated Git worktree. Codex, Grok CLI, and Copilot CLI use explicit worktree paths; Claude Code uses its native `EnterWorktree` tool. By default, the skill ends at the PR and review handoff.
-
-### Plan and delegate from Claude Code
-
-**Claude Code only.** After `/tackle-task` and a decision to proceed, enter plan mode and run:
-
-```text
+# 2. If you decide to proceed, enter plan mode and prepare the plan.
+/plan
 /plan-pipeline
+
+# 3. Answer the planning questions, resolve findings, and approve the plan.
+# Then delegate implementation and publication, using the saved plan's path.
+/delegate-ship codex ~/.claude/plans/123-fix-timeout.md
 ```
 
-It clarifies the approach, checks the code references, prepares a handoff when needed, offers an external review, and runs `final-plan-check` before requesting approval. It calls the component skills itself. If you choose external review, it uses `delegate-plan-review --verify` to check findings against the code.
+`tackle-task` checks the premise without editing anything. `plan-pipeline` handles the planning steps, including a handoff when needed, optional external review with verified findings, and `final-plan-check`. You do not need to repeat those steps yourself.
 
-After approval, choose one execution path. Use the actual saved plan path; the path below is an example.
-
-| What you want | Command in Claude Code | Result |
-|---|---|---|
-| Codex implements; you inspect before publishing | `/delegate-plan codex ~/.claude/plans/123-fix-timeout.md` | Verified, uncommitted changes in a worktree |
-| Codex implements; Claude verifies, reviews, and publishes | `/delegate-ship codex ~/.claude/plans/123-fix-timeout.md` | An open PR and review follow-up commands |
-| This session implements and publishes | `/worktree-ship ~/.claude/plans/123-fix-timeout.md` | An open PR handed off for independent review |
+After approval, `delegate-ship` has Codex implement in a worktree. Claude independently verifies the result, reviews the diff, commits, and opens the PR. It returns the PR URL and follow-up commands for reviewer comments and CI. The example plan path is a placeholder; use the path returned by your planning session.
 
 ```mermaid
 flowchart TD
-    plan["Approved plan in Claude Code"] -->|"delegate-plan"| implement["Executor implements"]
-    implement --> verified["Claude verifies: uncommitted diff"]
-    plan -->|"delegate-ship"| ship["Runs delegate-plan"]
-    ship --> review["Claude verifies and reviews"]
+    issue["/tackle-task: investigate"] --> decision{"Proceed?"}
+    decision -->|No| stop["Stop or defer"]
+    decision -->|Yes| plan["Enter plan mode; /plan-pipeline"]
+    plan --> approval["You approve the plan"]
+    approval --> delegate["/delegate-ship codex: implement in a worktree"]
+    delegate --> review["Claude verifies and reviews"]
     review --> pr["Commit and open PR"]
 ```
 
-The executor can also be `grok`, `copilot`, or `claude`. Optional `--model` and `--effort` flags override configured defaults; the Claude subagent supports model selection but has no effort control. `delegate-plan` also supports `--resume` for continuing a run, subject to that executor's resume limits.
+**Other execution choices:** use `/worktree-ship` with the approved plan for the current session to implement and open the PR, then hand off independent review. Use `/delegate-plan codex <plan-path>` to stop at verified, uncommitted changes. Delegation also supports `grok`, `copilot`, and `claude` executors.
 
-You can request a second opinion on a draft without running the whole pipeline:
+**A second opinion without the full planning pipeline:** run `/delegate-plan-review codex --verify <plan-path>`. It checks findings against the code and applies supported corrections to a live plan. Without `--verify`, use `/review-findings` before acting on the review.
 
-```text
-/delegate-plan-review codex --verify ~/.claude/plans/123-fix-timeout.md
-```
+### Working directly in Codex, Grok CLI, or Copilot CLI
 
-With `--verify`, confirmed corrections are applied when the input is the live plan. Without it, use `review-findings` to check the review before acting. Approval is needed for implementation, not for requesting a plan review.
+Start with `tackle-task`, draft a plan in that host, and use `final-plan-check` before approving it. Then run `worktree-ship` to implement, verify, and open a PR. In Codex and Grok CLI, use `$tackle-task`, `$final-plan-check`, and `$worktree-ship`; Copilot CLI uses the `/` forms. Use `plan-implementation` only when an executor needs a self-contained handoff.
+
+These hosts use explicit Git worktree paths; Claude Code uses its native `EnterWorktree` tool. The `plan-pipeline` and `delegate-*` commands remain Claude Code-only workflows.
 
 ### Finish a small fix or publish existing work
 
 Suppose you have already fixed a typo or a small bug and run the relevant checks. Choose the endpoint you need; these are alternatives, not a sequence.
 
-| Endpoint | Codex | Claude Code |
+| Endpoint | Claude Code | Codex |
 |---|---|---|
-| Local commit | `$commit` | `/commit` |
-| Commit and push the current branch | `$commit-push` | `/commit-push` |
-| Commit and open a PR | `$commit-open-pr` | `/commit-open-pr` |
-| Open a PR for existing work | `$open-pr` | `/open-pr` |
+| Local commit | `/commit` | `$commit` |
+| Commit and push the current branch | `/commit-push` | `$commit-push` |
+| Commit and open a PR | `/commit-open-pr` | `$commit-open-pr` |
+| Open a PR for existing work | `/open-pr` | `$open-pr` |
 
 `commit` normally runs a cleanup pass and stages only the intended changes. `open-pr` can also call `commit` when changes are uncommitted; when the commits already exist, it publishes those. You do not need to create a plan or invoke an implementation workflow just to publish finished work.
 
 ### Explain work or create a visual
 
-Give the skill the material and the output you want. For example, in Codex:
+Give the skill the material and the output you want. For example, in Claude Code:
 
 ```text
-$plan-to-artifact Turn the current plan into a local review page.
-$task-report Create a local debrief of this fix with its changes and test evidence.
-$artifact-design Make a self-contained HTML report from these benchmark results.
-$canvas-design Create a PNG poster for a community coding night.
-$algorithmic-art Create a flow-field artwork with seed and density controls.
+/plan-to-artifact Turn the current plan into a local review page.
+/task-report Create a local debrief of this fix with its changes and test evidence.
+/artifact-design Make a self-contained HTML report from these benchmark results.
+/canvas-design Create a PNG poster for a community coding night.
+/algorithmic-art Create a flow-field artwork with seed and density controls.
 ```
 
 `plan-to-artifact` presents a plan awaiting approval; `task-report` explains completed work. Neither performs a code review. Both offer local HTML output; publishing depends on the host's tools. For an HTML report, `artifact-diagramming` explains mechanisms and `dataviz` handles charts. See the [visual skills](#visual-skills) for the output of each.
@@ -212,6 +180,12 @@ npx skills update commit commit-push open-pr --global
 ```
 
 For local-path installations, pull changes into the checkout and rerun the install command. Keep edits in this source repository; updates can replace changes made to installed copies. The default installation links agents to a canonical installed copy. `--copy` creates independent agent copies. Neither mode links back to this source checkout. See the [CLI update documentation](https://github.com/vercel-labs/skills#skills-update).
+
+### Installation options and dependencies
+
+Use `.` instead of `gtapps/skills` to install from this checkout. To install only into a project, run from that project, omit `--global`, and choose project scope if prompted. Add `--skill <name>` to select a skill directly or `--list` to browse without installing. Private repositories use existing Git authentication. See the [skills CLI documentation](https://github.com/vercel-labs/skills#readme).
+
+Install the skills your workflow calls, too: `worktree-ship` uses `commit-open-pr`, which calls `commit` and `open-pr`. External requirements include `grilling` for `plan-pipeline`, `delta-diagrams` for behavioral diagrams, and `code-review` for `delegate-ship`. Claude's PR handoff suggests `babysit-prs`. These are not bundled automatically; each skill documents its required tools and authentication.
 
 <details>
 <summary>Saved 17-skill Claude Code selection</summary>
