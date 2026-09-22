@@ -1,6 +1,6 @@
 ---
 name: worktree-ship
-description: Take an approved plan from plan mode through worktree implementation to an open PR, handed off for review in a fresh session, in one move. Trigger on "/worktree-ship", "enter worktree and ship it", "For implementation Enter Worktree and when done run /commit-open-pr", "implement and open the PR", "ship the plan", "implement this in a worktree". Do NOT use for issue triage (use tackle-issue), for a commit without a PR (use commit-push), or when no approved plan exists yet — draft and get approval first.
+description: Take an approved plan from plan mode through worktree implementation to an open PR, handed off for review in a fresh session, in one move. Trigger on "/worktree-ship", "enter worktree and ship it", "For implementation Enter Worktree and when done run /commit-open-pr", "implement and open the PR", "ship the plan", "implement this in a worktree". Do NOT use for issue triage (use tackle-task), for a commit without a PR (use commit-push), or when no approved plan exists yet — draft and get approval first.
 ---
 
 # worktree-ship

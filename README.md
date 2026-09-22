@@ -28,7 +28,7 @@ See the [Vercel skills CLI documentation](https://github.com/vercel-labs/skills#
 
 ## Included skills
 
-- Planning and review: `tackle-issue`, `plan-pipeline`, `plan-implementation`, `plan-to-artifact`, `final-plan-check`, `delegate-plan-review`, `review-findings`.
+- Planning and review: `tackle-task`, `plan-pipeline`, `plan-implementation`, `plan-to-artifact`, `final-plan-check`, `delegate-plan-review`, `review-findings`.
 - Execution and delivery: `delegate-plan`, `delegate-ship`, `worktree-ship`, `commit`, `commit-push`, `commit-open-pr`, `open-pr`, `simplify`.
 - Investigation and reporting: `probe`, `task-report`, `wrap`.
 - Visual work: `algorithmic-art`, `artifact-design`, `artifact-diagramming`, `canvas-design`, `dataviz`.
@@ -37,7 +37,7 @@ To reproduce the existing Claude selection, install these 17 skills:
 
 ```bash
 npx skills add . --agent claude-code --global --skill \
-  tackle-issue delegate-plan delegate-plan-review delegate-ship \
+  tackle-task delegate-plan delegate-plan-review delegate-ship \
   plan-pipeline plan-to-artifact probe task-report worktree-ship wrap \
   plan-implementation commit-open-pr commit commit-push open-pr \
   final-plan-check review-findings

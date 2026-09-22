@@ -1,4 +1,0 @@
-interface:
-  display_name: "Tackle Issue"
-  short_description: "Investigate an issue before deciding whether to ship"
-  default_prompt: "Use $tackle-issue to investigate this issue against the current code before recommending whether to ship it."

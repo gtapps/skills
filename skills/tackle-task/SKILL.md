@@ -1,9 +1,9 @@
 ---
-name: tackle-issue
+name: tackle-task
 description: "Investigate a GitHub issue or pasted proposal, test its premise, and recommend whether to proceed. Read-only; does not implement."
 ---
 
-# Tackle Issue
+# Tackle Task
 
 Treat every issue or proposal as a hypothesis, not a specification. Attempt to disprove it before planning a fix. Keep the entire workflow read-only.
 
