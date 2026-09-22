@@ -12,7 +12,9 @@ compatibility: Requires Claude Code as the host; Codex, Grok, and Copilot may be
 
 **1. Print the goal, name the plan.** Print this line first so the operator can paste it:
 
-    /goal The plan for <ISSUE> is ready for a single ExitPlanMode: the plan file is named <ISSUE>-<slug>.md; it contains a BEFORE/AFTER delta diagram, a worth-it ledger (tokens per wake, wakes per day, added files/hooks, overlap with CC native / OpenClaw / Hermes), a blast-radius section (released vs unreleased surfaces, downstream operators, downstream hermits), and an explicit core-vs-plugin decision; every harness-behavior premise cites a PROBE_VERDICT or is listed as unprobed; delegate-plan-review --verify and final-plan-check verdicts are quoted; no ExitPlanMode was called before those verdicts. Or stop after 20 turns.
+    /goal The plan for <ISSUE> is ready for a single ExitPlanMode: the plan file is named <ISSUE>-<slug>.md; it contains a BEFORE/AFTER delta diagram, a worth-it ledger (tokens per wake, wakes per day, added files/hooks, overlap with CC native / OpenClaw / Hermes), a blast-radius section (released vs unreleased surfaces, downstream operators, downstream hermits), and an explicit core-vs-plugin decision; every harness-behavior premise cites a PROBE_VERDICT or is listed as unprobed; delegate-plan-review --verify and final-plan-check verdicts are quoted; no ExitPlanMode was called before those verdicts. Or this session has halted for the operator: its last message is a grilling question or a rejected-plan follow-up, with no operator reply yet. Or stop after 20 turns.
+
+The goal evaluator is binary: a halt satisfies the goal and clears it, which keeps it from pushing past a question that belongs to the operator. So print this goal line again when grilling ends, before step 4, and at the end of every step 8 wait, so the operator can re-pin it.
 
 If this session is not in plan mode, stop and say to enter it (`/plan` or the plan-mode toggle); this skill does not run outside it.
 

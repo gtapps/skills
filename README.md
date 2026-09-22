@@ -14,17 +14,24 @@ Reusable workflows for investigating tasks, planning changes, shipping code, and
 | Explain a plan or completed work | [plan-to-artifact](skills/plan-to-artifact/SKILL.md) or [task-report](skills/task-report/SKILL.md) |
 | Create a chart, diagram, poster, or generative artwork | [Visual skills](#visual-skills) |
 
-For a substantial change, the usual flow is:
+### Pick a route by task size
 
-```mermaid
-flowchart LR
-    issue["Investigate the issue"] --> decision{"Worth doing?"}
-    decision -->|Yes| plan["Plan and review"]
-    decision -->|No| stop["Stop or defer"]
-    plan --> approval["You approve"]
-    approval --> implement["Implement and verify"]
-    implement --> pr["Open PR"]
-```
+Every route starts with `/tackle-task`, which is read-only and ends in a verdict. Stop there on SKIP or DEFER.
+
+| Task | Plan | Ship |
+|---|---|---|
+| Trivial: a clear fix of a few lines | None; fix it in the session | `/commit-open-pr` |
+| Simple: settled approach, few files | Plan mode, then `/plan-implementation` | `/clear`, then `/delegate-ship <executor> @<plan>` |
+| Hard: open design choices or a wide blast radius | `/plan-pipeline`, or the steps below by hand | Same as simple |
+
+By hand, in plan mode, in this order:
+
+1. Draft the plan ("propose a plan"). Run `/grilling` first if requirements are still open.
+2. Optional: `/delegate-plan-review <harness> [--model <m>] [--effort <e>] --verify`. Without `--verify`, run `/review-findings` on the review before changing the plan.
+3. `/final-plan-check`.
+4. `/plan-implementation`, last, so it encodes the reviewed decisions.
+
+`plan-implementation` does not plan. It rewrites settled decisions into the `## Steps` and `## Closing verification` blocks that `delegate-ship` runs, so use it whenever a fresh context or another executor implements. `plan-pipeline` runs all four steps plus grilling and anchor grounding, then asks for approval once; it picks the review harness by asking, so go by hand when you want to set `--model` or `--effort`.
 
 An open PR still needs review and merging. The publishing skills here do not merge it.
 
@@ -60,34 +67,40 @@ Choose the skills you want when prompted, then start a fresh Claude Code session
 Suppose issue #123 reports that uploads time out. Run these commands one at a time, reading the result before continuing:
 
 ```text
-# 1. Investigate the issue and read the recommendation.
+# 1. Investigate. Pass an issue URL, or a proposal file with @path.
 /tackle-task https://github.com/OWNER/REPO/issues/123
 
-# 2. If you decide to proceed, enter plan mode and prepare the plan.
-/plan
-/plan-pipeline
+# 2. Discuss the verdict, then ask for a plan ("propose a plan") in plan mode.
+#    Add reviews as needed, then make the plan executor-ready.
+#    Or run /plan-pipeline for the whole chain.
+/delegate-plan-review codex --effort high --verify
+/plan-implementation
 
-# 3. Answer the planning questions, resolve findings, and approve the plan.
-# Then delegate implementation and publication, using the saved plan's path.
-/delegate-ship codex ~/.claude/plans/123-fix-timeout.md
+# 3. After you approve, start a clean context and delegate the saved plan.
+/clear
+/delegate-ship grok @~/.claude/plans/123-fix-timeout.md
+
+# 4. Paste the /goal line that delegate-ship prints, so the session keeps
+#    going until the PR is open. If it stops to ask you something, the goal
+#    ends there; answer and paste the reprinted /goal line with your reply.
 ```
 
-`tackle-task` checks the premise without editing anything. `plan-pipeline` handles the planning steps, including a handoff when needed, optional external review with verified findings, and `final-plan-check`. You do not need to repeat those steps yourself.
+`tackle-task` checks the premise without editing anything. The plan is saved to a file, so `/clear` drops the investigation context without losing the plan; the example path is a placeholder for the one your session printed. `plan-pipeline` runs grilling, grounding, optional review, and `final-plan-check` in one pass if you prefer not to pick steps yourself.
 
-After approval, `delegate-ship` has Codex implement in a worktree. Claude independently verifies the result, reviews the diff, commits, and opens the PR. It returns the PR URL and follow-up commands for reviewer comments and CI. The example plan path is a placeholder; use the path returned by your planning session.
+`delegate-ship` has the executor implement in a worktree. Claude independently verifies the result, reviews the diff, commits, and opens the PR. Use `--effort low|medium|high` to size the executor, and `/delegate-plan status` from another session to check on a running delegation.
 
 ```mermaid
 flowchart TD
     issue["/tackle-task: investigate"] --> decision{"Proceed?"}
     decision -->|No| stop["Stop or defer"]
-    decision -->|Yes| plan["Enter plan mode; /plan-pipeline"]
+    decision -->|Yes| plan["Plan mode; add reviews or /plan-pipeline"]
     plan --> approval["You approve the plan"]
-    approval --> delegate["/delegate-ship codex: implement in a worktree"]
+    approval --> delegate["/clear; /delegate-ship grok: implement in a worktree"]
     delegate --> review["Claude verifies and reviews"]
     review --> pr["Commit and open PR"]
 ```
 
-**Other execution choices:** use `/worktree-ship` with the approved plan for the current session to implement and open the PR, then hand off independent review. Use `/delegate-plan codex <plan-path>` to stop at verified, uncommitted changes. Delegation also supports `grok`, `copilot`, and `claude` executors.
+**Other execution choices:** use `/worktree-ship` with the approved plan for the current session to implement and open the PR, then hand off independent review. Use `/delegate-plan codex <plan-path>` to stop at verified, uncommitted changes. Both accept any executor: `grok`, `codex`, `copilot`, or `claude`.
 
 **A second opinion without the full planning pipeline:** run `/delegate-plan-review codex --verify <plan-path>`. It checks findings against the code and applies supported corrections to a live plan. Without `--verify`, use `/review-findings` before acting on the review.
 
