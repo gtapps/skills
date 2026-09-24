@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>↔️</text></svg>">
+  <title>{{TITLE}}</title>
+  <style>
+    :root {
+      --bg: #f7f8fb;
+      --panel: #ffffff;
+      --text: #172033;
+      --muted: #5d687c;
+      --border: #d8deea;
+      --accent: #315efb;
+      --chosen: #087a55;
+      --costly: #9a3412;
+      --shadow: 0 16px 40px rgb(23 32 51 / 10%);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0e1320;
+        --panel: #171e2d;
+        --text: #edf2ff;
+        --muted: #aab5cb;
+        --border: #303b51;
+        --accent: #8aa4ff;
+        --chosen: #5ed6ad;
+        --costly: #ffb38a;
+        --shadow: 0 16px 40px rgb(0 0 0 / 28%);
+      }
+    }
+    :root[data-theme="light"] {
+      --bg: #f7f8fb;
+      --panel: #ffffff;
+      --text: #172033;
+      --muted: #5d687c;
+      --border: #d8deea;
+      --accent: #315efb;
+      --chosen: #087a55;
+      --costly: #9a3412;
+      --shadow: 0 16px 40px rgb(23 32 51 / 10%);
+    }
+    :root[data-theme="dark"] {
+      --bg: #0e1320;
+      --panel: #171e2d;
+      --text: #edf2ff;
+      --muted: #aab5cb;
+      --border: #303b51;
+      --accent: #8aa4ff;
+      --chosen: #5ed6ad;
+      --costly: #ffb38a;
+      --shadow: 0 16px 40px rgb(0 0 0 / 28%);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 16px/1.55 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main { width: min(1100px, calc(100% - 2rem)); margin: 3rem auto; }
+    header { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between; align-items: start; }
+    h1 { margin: 0 0 .5rem; font-size: clamp(1.8rem, 4vw, 3rem); line-height: 1.1; }
+    .summary { color: var(--muted); max-width: 72ch; }
+    button {
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: var(--panel);
+      color: var(--text);
+      padding: .55rem .85rem;
+      cursor: pointer;
+    }
+    .panel {
+      margin-top: 2rem;
+      padding: clamp(1rem, 3vw, 2rem);
+      border: 1px solid var(--border);
+      border-radius: 1rem;
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      overflow-x: auto;
+    }
+    .lane + .lane { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px dashed var(--border); }
+    .label { display: inline-block; margin-bottom: .75rem; font-weight: 700; }
+    .flow { display: flex; align-items: center; gap: .75rem; min-width: max-content; }
+    .node { max-width: 22rem; padding: .75rem 1rem; border: 1px solid currentColor; border-radius: .5rem; }
+    .before { color: var(--costly); }
+    .after { color: var(--chosen); }
+    .kpis { margin-top: 1.5rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+    button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1>{{TITLE}}</h1>
+        <p class="summary">{{SUMMARY}}</p>
+      </div>
+      <button type="button" id="theme-toggle" aria-label="Toggle color theme">Theme</button>
+    </header>
+    <section class="panel" aria-label="Behavioral workflow diagram">
+      <div class="lane before">
+        <span class="label">BEFORE</span>
+        <div class="flow">
+          <span class="node">{{BEFORE_TRIGGER}}</span><span aria-hidden="true">→</span>
+          <span class="node">{{BEFORE_OUTCOME}}</span>
+        </div>
+      </div>
+      <div class="lane after">
+        <span class="label">AFTER</span>
+        <div class="flow">
+          <span class="node">{{AFTER_TRIGGER}}</span><span aria-hidden="true">→</span>
+          <span class="node">{{AFTER_OUTCOME}}</span>
+        </div>
+      </div>
+      <p class="kpis">{{EVIDENCE_BACKED_KPIS}}</p>
+    </section>
+  </main>
+  <script>
+    const root = document.documentElement;
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+      const current = root.dataset.theme ||
+        (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      root.dataset.theme = current === "dark" ? "light" : "dark";
+    });
+  </script>
+</body>
+</html>

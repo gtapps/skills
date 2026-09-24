@@ -1,0 +1,4 @@
+interface:
+  display_name: "Delta Diagrams"
+  short_description: "Render behavioral before-and-after workflow diagrams"
+  default_prompt: "Use $delta-diagrams to show the behavioral change as a concise operator-facing diagram."

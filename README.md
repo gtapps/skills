@@ -180,6 +180,7 @@ Each link opens the actual workflow, including its prerequisites. **Claude only*
 |---|---|---|
 | [artifact-design](skills/artifact-design/SKILL.md) | A report, dashboard, or explainer page | Self-contained HTML with a deliberate layout and visual style |
 | [artifact-diagramming](skills/artifact-diagramming/SKILL.md) | To explain how components, data, or states connect | Mechanism diagrams within an HTML page |
+| [delta-diagrams](skills/delta-diagrams/SKILL.md) | Behavioral before/after flows and decision branches, shared across hosts | Inline diagrams or self-contained HTML panels |
 | [dataviz](skills/dataviz/SKILL.md) | To compare values, trends, or categories | Accessible charts with validated colors and appropriate labels |
 | [canvas-design](skills/canvas-design/SKILL.md) | A static poster or artwork | A design philosophy plus PNG or PDF artwork |
 | [algorithmic-art](skills/algorithmic-art/SKILL.md) | Generative artwork with adjustable parameters | A philosophy, p5.js algorithm, and interactive HTML viewer |
@@ -198,7 +199,7 @@ For local-path installations, pull changes into the checkout and rerun the insta
 
 Use `.` instead of `gtapps/skills` to install from this checkout. To install only into a project, run from that project, omit `--global`, and choose project scope if prompted. Add `--skill <name>` to select a skill directly or `--list` to browse without installing. Private repositories use existing Git authentication. See the [skills CLI documentation](https://github.com/vercel-labs/skills#readme).
 
-Install the skills your workflow calls, too: `worktree-ship` uses `commit-open-pr`, which calls `commit` and `open-pr`. External requirements include `grilling` for `plan-pipeline`, `delta-diagrams` for behavioral diagrams, and `code-review` for `delegate-ship`. Claude's PR handoff suggests `babysit-prs`. These are not bundled automatically; each skill documents its required tools and authentication.
+Install the skills your workflow calls, too: `worktree-ship` uses `commit-open-pr`, which calls `commit` and `open-pr`. `delta-diagrams` uses `artifact-design` for HTML pages; inline diagrams need no companion skill. External requirements include `grilling` for `plan-pipeline`, and `code-review` for `delegate-ship`. Claude's PR handoff suggests `babysit-prs`. These are not bundled automatically; each skill documents its required tools and authentication.
 
 <details>
 <summary>Saved 17-skill Claude Code selection</summary>
@@ -213,7 +214,7 @@ npx skills add . --agent claude-code --global --skill \
   final-plan-check review-findings
 ```
 
-This selection uses Claude Code's bundled `/simplify` and excludes the five visual skills. It is a saved selection, not a dependency-complete installation for every workflow. Choose skills explicitly rather than using `--all` to preserve it.
+This selection uses Claude Code's bundled `/simplify` and excludes the visual skills. It is a saved selection, not a dependency-complete installation for every workflow. Choose skills explicitly rather than using `--all` to preserve it.
 
 </details>
 
