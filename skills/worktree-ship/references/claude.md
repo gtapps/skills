@@ -19,7 +19,7 @@ produced it is not needed to execute it.
 
 Then call `EnterWorktree`. Rename the branch to this repo's convention as the repo itself documents it (`CLAUDE.md` or `AGENTS.md`, often a §Branching section); if it documents none, match the shape of recent branches in `git branch -a`. A common form is `feat/<issue>-<slug>` / `fix/<issue>-<slug>` / `chore/<slug>`, but the repo's own answer wins.
 
-With `--no-worktree`, skip `EnterWorktree` and the branch rename, and implement in the current checkout. `review-ship` creates the branch (by the same convention) before anything is committed. Stop and ask first if the checkout is on a branch other than the default one that isn't this task's branch, because the work would land on it. Uncommitted work already in the checkout stays out of the change: `commit` stages only the files this session edited, and asks when a file it needs also holds someone else's edits.
+With `--no-worktree`, skip `EnterWorktree` and the branch rename, and implement in the current checkout. `review-to-pr` creates the branch (by the same convention) before anything is committed. Stop and ask first if the checkout is on a branch other than the default one that isn't this task's branch, because the work would land on it. Uncommitted work already in the checkout stays out of the change: `commit` stages only the files this session edited, and asks when a file it needs also holds someone else's edits.
 
 **2. Implement the approved plan.** Follow the plan; do not grow it. Context hygiene (these rules exist because past sessions burned tokens re-reading whole files):
 - Read large files with `offset`/`limit` around the region you are editing; don't slurp a 1000-line file to change 10 lines.
@@ -27,18 +27,18 @@ With `--no-worktree`, skip `EnterWorktree` and the branch rename, and implement 
 
 **3. Verify before any commit.** Run this repo's own test and typecheck commands, exactly as the repo states them (`CLAUDE.md` / `AGENTS.md`, else its package manifest scripts or CI workflow). Repos with several suites often need more than one command, so run what the repo lists rather than a remembered shorthand. Never proceed red: fix and re-run until green, quoting the passing output.
 
-**4. Review and publish.** Invoke the `review-ship` skill, passing through `--level` and `--model` exactly as given. Quote the step 3 run so it doesn't repeat it. It commits, has `/code-review --fix` run in a fresh-context subagent, re-verifies, runs the repo's pre-push gate, and opens the PR. This session wrote the code, so the review runs in that subagent, not here. When review-ship halts for the operator (red verification, unfixed findings, a plan-contract question), this skill halts with it.
+**4. Review and publish.** Invoke the `review-to-pr` skill, passing through `--level` and `--model` exactly as given. Quote the step 3 run so it doesn't repeat it. It commits, has `/code-review --fix` run in a fresh-context subagent, re-verifies, runs the repo's pre-push gate, and opens the PR. This session wrote the code, so the review runs in that subagent, not here. When review-to-pr halts for the operator (red verification, unfixed findings, a plan-contract question), this skill halts with it.
 
-**5. Report.** PR URL; test evidence (exact command + exit) before and after the review; the reviewer model and level with the findings' fixed or skipped state, from review-ship; and one before/after diagram rendered per the `delta-diagrams` skill.
+**5. Report.** PR URL; test evidence (exact command + exit) before and after the review; the reviewer model and level with the findings' fixed or skipped state, from review-to-pr; and one before/after diagram rendered per the `delta-diagrams` skill.
 
 ## Suggested goal
 
 Offer to pin this so the whole flow survives multi-turn without per-turn prompting:
 
-    /goal Issue #<N> is shipped: the implementation passes this repo's test and typecheck commands (exit 0 shown); review-ship has run /code-review --fix in a subagent, re-verified green, and the PR URL is shown. With a worktree, no files outside it were touched. Or this session has halted for the operator: its last message is a red verification table, the numbered unfixed-findings list, or a plan-contract question, with no operator reply yet. Or stop after 30 turns.
+    /goal Issue #<N> is shipped: the implementation passes this repo's test and typecheck commands (exit 0 shown); review-to-pr has run /code-review --fix in a subagent, re-verified green, and the PR URL is shown. With a worktree, no files outside it were touched. Or this session has halted for the operator: its last message is a red verification table, the numbered unfixed-findings list, or a plan-contract question, with no operator reply yet. Or stop after 30 turns.
 
 ## Don't
 
-- Don't reimplement `review-ship`, `commit` or `open-pr`; invoke the skills.
-- Don't review the diff in this session's own context; review-ship's subagent does it.
+- Don't reimplement `review-to-pr`, `commit` or `open-pr`; invoke the skills.
+- Don't review the diff in this session's own context; review-to-pr's subagent does it.
 - Don't skip step 3 to "save time"; the verification spine is the whole reason terse prompts still ship tested code.

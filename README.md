@@ -18,7 +18,7 @@ Every route starts with `/tackle-task`, which is read-only and ends in a verdict
 
 | Task | Plan | Ship |
 |---|---|---|
-| Trivial: a clear fix of a few lines | None; fix it in the session | `/review-ship` |
+| Trivial: a clear fix of a few lines | None; fix it in the session | `/review-to-pr` |
 | Simple: settled approach, few files | Plan mode, then `/plan-implementation` | `/clear`, then `/delegate-ship <executor> @<plan>` |
 | Hard: open design choices or a wide blast radius | `/plan-pipeline`, or the steps below by hand | Same as simple |
 
@@ -45,8 +45,8 @@ For example:
 - `plan-pipeline` runs grilling, grounding, review, the final check, and `plan-implementation` with one approval. Go by hand to set the reviewer's `--model` or `--effort`.
 - `delegate-ship` prints a `/goal` line; paste it so the session keeps going until the PR is open. If it stops to ask you, the goal ends; answer and paste the reprinted line.
 - Executors are `grok`, `codex`, `copilot`, or `claude`. `/delegate-plan status` checks a running delegation. `/delegate-plan` alone stops at verified, uncommitted changes; `/worktree-ship` has the current session implement instead.
-- `review-ship` runs `/code-review --fix` in a subagent with no session history, so there's no `/clear` and no second session. `--model <m>` picks the reviewer's model (default: the session's) and `--level` the review level (default `high`).
-- `/worktree-ship` ends with `review-ship`; `/worktree-ship --no-worktree` implements in the current checkout instead of a worktree.
+- `review-to-pr` runs `/code-review --fix` in a subagent with no session history, so there's no `/clear` and no second session. `--model <m>` picks the reviewer's model (default: the session's) and `--level` the review level (default `high`).
+- `/worktree-ship` ends with `review-to-pr`; `/worktree-ship --no-worktree` implements in the current checkout instead of a worktree.
 - In Codex, Grok CLI, and Copilot CLI, the review runs read-only in a separate CLI process: the host's own CLI by default, or another with `--reviewer claude|codex|grok|copilot`. The host checks each finding and applies the confirmed ones through `review-findings`.
 - On a Codex host the reviewer command needs escalated permissions. With a private repository, Codex's automatic approval (`codex --approve-for-me`) refuses to send the diff to the reviewer unless your request approves it.
 - `copilot -p` reads only the working directory, so launch it with `--add-dir` for the installed skills directory.
@@ -59,7 +59,7 @@ Already have the changes? Use `/commit`, `/commit-push`, `/commit-open-pr`, or `
 Invoke skills as `/name` in Claude Code and Copilot CLI, or `$name` in Codex and Grok CLI.
 
 - **Claude Code only:** `plan-pipeline`, `delegate-plan`, `delegate-plan-review`, `delegate-ship`. They can delegate to Codex, Grok, Copilot, or a Claude subagent.
-- **Separate instructions per host:** `worktree-ship`, `review-ship`, `plan-to-artifact`, `task-report`, `probe`, `wrap`.
+- **Separate instructions per host:** `worktree-ship`, `review-to-pr`, `plan-to-artifact`, `task-report`, `probe`, `wrap`.
 - Other skills share instructions but depend on the host's tools. The installer does not enforce these limits.
 
 In Codex, Grok CLI, or Copilot CLI: `tackle-task`, draft a plan, `final-plan-check`, then `worktree-ship`.
@@ -85,7 +85,7 @@ In Codex, Grok CLI, or Copilot CLI: `tackle-task`, draft a plan, `final-plan-che
 | [delegate-plan](skills/delegate-plan/SKILL.md) | Another executor implements in a worktree; stops before committing |
 | [delegate-ship](skills/delegate-ship/SKILL.md) | `delegate-plan`, then re-verification, code review, commit, and PR |
 | [worktree-ship](skills/worktree-ship/SKILL.md) | This session implements in a worktree and opens a PR |
-| [review-ship](skills/review-ship/SKILL.md) | Commits finished work, has a fresh-context reviewer check it, applies the fixes, and opens the PR |
+| [review-to-pr](skills/review-to-pr/SKILL.md) | Commits finished work, has a fresh-context reviewer check it, applies the fixes, and opens the PR |
 | [simplify](skills/simplify/SKILL.md) | Behavior-preserving cleanup of a diff |
 | [commit](skills/commit/SKILL.md) | Cleanup, precise staging, and a local commit |
 | [commit-push](skills/commit-push/SKILL.md) | Commits and pushes the current branch |
@@ -111,7 +111,7 @@ In Codex, Grok CLI, or Copilot CLI: `tackle-task`, draft a plan, `final-plan-che
 | [canvas-design](skills/canvas-design/SKILL.md) | Static PNG or PDF posters and artwork |
 | [algorithmic-art](skills/algorithmic-art/SKILL.md) | p5.js generative art with an interactive viewer |
 
-**Dependencies:** `worktree-ship` (every host) and `delegate-ship` call `review-ship`, which calls `commit` and `open-pr`, plus `code-review` in Claude Code, or `review-findings` and a reviewer CLI on the other hosts. `commit-open-pr` calls `commit` and `open-pr`. `delta-diagrams` uses `artifact-design` for HTML pages; inline diagrams need no companion skill. Some skills need skills from outside this repo: `grilling` for `plan-pipeline`, `code-review` for `delegate-ship` and `review-ship`, and `babysit-prs` for PR follow-up.
+**Dependencies:** `worktree-ship` (every host) and `delegate-ship` call `review-to-pr`, which calls `commit` and `open-pr`, plus `code-review` in Claude Code, or `review-findings` and a reviewer CLI on the other hosts. `commit-open-pr` calls `commit` and `open-pr`. `delta-diagrams` uses `artifact-design` for HTML pages; inline diagrams need no companion skill. Some skills need skills from outside this repo: `grilling` for `plan-pipeline`, `code-review` for `delegate-ship` and `review-to-pr`, and `babysit-prs` for PR follow-up.
 
 <details>
 <summary>Saved Claude Code selection</summary>
@@ -119,7 +119,7 @@ In Codex, Grok CLI, or Copilot CLI: `tackle-task`, draft a plan, `final-plan-che
 ```bash
 npx skills add . --agent claude-code --global --skill \
   tackle-task delegate-plan delegate-plan-review delegate-ship \
-  plan-pipeline plan-to-artifact probe task-report worktree-ship review-ship wrap \
+  plan-pipeline plan-to-artifact probe task-report worktree-ship review-to-pr wrap \
   plan-implementation commit-open-pr commit commit-push open-pr \
   final-plan-check review-findings
 ```

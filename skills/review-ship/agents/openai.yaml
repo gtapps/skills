@@ -1,4 +1,0 @@
-interface:
-  display_name: "Review Ship"
-  short_description: "Review finished work with a separate reviewer CLI and open the PR"
-  default_prompt: "Use $review-ship to verify this change, have a separate reviewer CLI review it, apply the confirmed findings, and open the PR."

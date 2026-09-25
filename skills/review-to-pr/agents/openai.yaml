@@ -1,0 +1,4 @@
+interface:
+  display_name: "Review to PR"
+  short_description: "Review finished work with a separate reviewer CLI and open the PR"
+  default_prompt: "Use $review-to-pr to verify this change, have a separate reviewer CLI review it, apply the confirmed findings, and open the PR."

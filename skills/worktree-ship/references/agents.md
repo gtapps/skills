@@ -1,6 +1,6 @@
 ---
 name: worktree-ship
-description: "Implement an approved plan in a Git worktree, verify it, and publish a reviewed pull request through review-ship, using Codex, Grok CLI, or Copilot CLI."
+description: "Implement an approved plan in a Git worktree, verify it, and publish a reviewed pull request through review-to-pr, using Codex, Grok CLI, or Copilot CLI."
 ---
 
 # Worktree Ship
@@ -17,7 +17,7 @@ Treat the approved plan as the contract. Execute it without re-litigating scope.
 
 ## Create the worktree
 
-With `--no-worktree`, skip this section and implement in the current checkout: review-ship creates the branch before anything is committed. Stop and ask first if the checkout is on a branch other than the default one that isn't this task's branch.
+With `--no-worktree`, skip this section and implement in the current checkout: review-to-pr creates the branch before anything is committed. Stop and ask first if the checkout is on a branch other than the default one that isn't this task's branch.
 
 Honor an explicit repository worktree convention first. Otherwise:
 
@@ -39,7 +39,7 @@ Never edit files in the originating checkout after entering the worktree. Do not
 
 ## Publish
 
-1. Read and follow <review-ship-skill-dir>/SKILL.md from inside the worktree, passing through `--reviewer`, `--model` and `--level` when the user gave them, and the verification run above. It commits, has a separate reviewer CLI review the change, applies the confirmed findings, re-verifies, runs the publishing gates, and opens the PR. When it stops for the user (red verification, unsettled findings, a plan-contract question), this skill stops with it.
+1. Read and follow <review-to-pr-skill-dir>/SKILL.md from inside the worktree, passing through `--reviewer`, `--model` and `--level` when the user gave them, and the verification run above. It commits, has a separate reviewer CLI review the change, applies the confirmed findings, re-verifies, runs the publishing gates, and opens the PR. When it stops for the user (red verification, unsettled findings, a plan-contract question), this skill stops with it.
 2. Read and follow <delta-diagrams-skill-dir>/SKILL.md to render one end-to-end behavioral before/after.
 3. Report:
    - PR URL, title, and base branch.

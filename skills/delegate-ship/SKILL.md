@@ -14,7 +14,7 @@ Resolve `<name-skill-dir>` to the absolute installed directory of the named skil
 
 **1. Print the goal, resolve the inputs.** Print this line first so the operator can paste it:
 
-    /goal <PLAN> is shipped by delegate-ship: DELEGATE_DONE shown; the plan's Closing verification re-run by me in the worktree after the last commit (verify.sh table shown, every row exit 0); review-ship ran /code-review high --fix in an Opus subagent and re-verified; any finding that reverses a plan contract halted for a Yes and the plan file was edited; the PR URL is shown with a blast-radius section. Or this session has halted where delegate-ship requires the operator: its last message is the numbered unfixed-findings list, a contract-change question, or a red verification table, with no operator reply yet. Never reset --hard; on push rejection fetch, rebase, retest, retry. Or stop after 30 turns.
+    /goal <PLAN> is shipped by delegate-ship: DELEGATE_DONE shown; the plan's Closing verification re-run by me in the worktree after the last commit (verify.sh table shown, every row exit 0); review-to-pr ran /code-review high --fix in an Opus subagent and re-verified; any finding that reverses a plan contract halted for a Yes and the plan file was edited; the PR URL is shown with a blast-radius section. Or this session has halted where delegate-ship requires the operator: its last message is the numbered unfixed-findings list, a contract-change question, or a red verification table, with no operator reply yet. Never reset --hard; on push rejection fetch, rebase, retest, retry. Or stop after 30 turns.
 
 The goal evaluator is binary: a halt satisfies the goal and clears it, which keeps it from pushing past a decision that belongs to the operator. So every time you halt for the operator, end the message with this goal line again, so they can re-pin it with their answer.
 
@@ -30,12 +30,12 @@ delegate-plan's report closes with an operator menu and "do not review, stage, c
 
 and print its `<exit>  <command>` table verbatim. Every row comes from the plan's Closing verification block. A red row stops the pipeline here with the table shown; the executor's `result.json` claims are not evidence.
 
-**4. Review and publish.** Invoke `review-ship --level high --model opus`. The executor may be a lower-effort or non-Claude harness, so the review runs on Opus whatever the session model is. Hand it:
-- the goal line from step 1 (review-ship prints none of its own);
+**4. Review and publish.** Invoke `review-to-pr --level high --model opus`. The executor may be a lower-effort or non-Claude harness, so the review runs on Opus whatever the session model is. Hand it:
+- the goal line from step 1 (review-to-pr prints none of its own);
 - `bash <delegate-plan-skill-dir>/scripts/verify.sh <run-dir>` as its verification command (plus the smoke below, when the plan names a protocol), with the step 3 table as its pre-review run;
 - the section below as an extra PR body section.
 
-review-ship commits the executor's tree without simplify (the executor already ran its own), runs the review in a fresh-context Opus subagent, re-verifies, and opens the PR. It halts on a red table, unfixed findings, or a finding that reverses a plan contract. On a contract halt, edit the plan file to record the new contract after the operator's Yes. The PR body section:
+review-to-pr commits the executor's tree without simplify (the executor already ran its own), runs the review in a fresh-context Opus subagent, re-verifies, and opens the PR. It halts on a red table, unfixed findings, or a finding that reverses a plan contract. On a contract halt, edit the plan file to record the new contract after the operator's Yes. The PR body section:
 
     ## Blast radius
     - Released surfaces touched: ...
@@ -46,7 +46,7 @@ review-ship commits the executor's tree without simplify (the executor already r
 
 The executor's name and model come from the run's `freeze.json` (`executor`, `model`; omit the model when null), so a PR reviewer sees which harness and model wrote the code.
 
-If the plan names an external protocol (a wire format, an MCP or HTTP contract, a channel bridge), add one real-client smoke against the worktree build to the verification commands you hand review-ship, and have review-ship paste its command and output into the PR body. No protocol named: skip the smoke, do not invent one.
+If the plan names an external protocol (a wire format, an MCP or HTTP contract, a channel bridge), add one real-client smoke against the worktree build to the verification commands you hand review-to-pr, and have review-to-pr paste its command and output into the PR body. No protocol named: skip the smoke, do not invent one.
 
 **5. Report and stop.** Print the PR URL. open-pr already prints `/loop 15m /babysit-prs` and the drain-review-queue goal; pass them through as printed, do not restate them. Copilot and CI comments are the babysit loop's job, not this session's.
 
@@ -55,6 +55,6 @@ If the plan names an external protocol (a wire format, an MCP or HTTP contract, 
 - Absolute paths everywhere. The worktree is the repo root (`git rev-parse --show-toplevel`), never the main checkout.
 - No test or typecheck command is named in this file. They come from the plan, through verify.sh.
 - Never reset --hard. On a rejected push: fetch, rebase, re-run verify.sh, push again.
-- Don't reimplement `delegate-plan` or `review-ship`; invoke them.
+- Don't reimplement `delegate-plan` or `review-to-pr`; invoke them.
 - Don't wait on the executor with sleep or status polls; the Monitor, or the agent completion for claude, wakes you.
 - GUEST_REPORT is not a step here. Sessions in a hermit-managed repo already receive that mandate from the project's startup context.

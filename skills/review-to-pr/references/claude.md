@@ -1,9 +1,9 @@
 ---
-name: review-ship
-description: Claude Code workflow for review-ship. Verifies finished work, commits it locally, runs /code-review --fix in a fresh-context subagent on a chosen model, re-verifies, and opens or updates the PR, so no /clear or second session is needed.
+name: review-to-pr
+description: Claude Code workflow for review-to-pr. Verifies finished work, commits it locally, runs /code-review --fix in a fresh-context subagent on a chosen model, re-verifies, and opens or updates the PR, so no /clear or second session is needed.
 ---
 
-# review-ship
+# review-to-pr
 
 The code is written and the operator wants it reviewed and published in one move. The review runs in a subagent with none of this session's history, because the session that wrote the code reads it with the author's assumptions. The same isolation `/clear` would give, without the round trip.
 
@@ -15,7 +15,7 @@ A calling skill (worktree-ship, delegate-ship) may hand over its verification co
 
 **1. Print the goal, then prepare.** Print this line so the operator can pin it:
 
-    /goal The work on <branch> is shipped by review-ship: verification shown green before the review; the implementation committed locally before the review; /code-review <level> --fix ran in a subagent on <model>, and its own diff was shown; verification re-run green after it; the PR URL is shown. Or this session has halted for the operator: its last message is a red verification table, the numbered unfixed-findings list, or a plan-contract question, with no operator reply yet. Never reset --hard, amend or force-push; on push rejection fetch, rebase, re-verify, retry. Or stop after 25 turns.
+    /goal The work on <branch> is shipped by review-to-pr: verification shown green before the review; the implementation committed locally before the review; /code-review <level> --fix ran in a subagent on <model>, and its own diff was shown; verification re-run green after it; the PR URL is shown. Or this session has halted for the operator: its last message is a red verification table, the numbered unfixed-findings list, or a plan-contract question, with no operator reply yet. Never reset --hard, amend or force-push; on push rejection fetch, rebase, re-verify, retry. Or stop after 25 turns.
 
 When you halt for the operator, end the message with this goal line again, so the operator can re-pin it with their answer.
 

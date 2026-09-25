@@ -1,9 +1,9 @@
 ---
-name: review-ship
-description: "Codex, Grok CLI and Copilot CLI workflow for review-ship. Verifies finished work, commits it locally, has a separate reviewer CLI review it read-only, applies the confirmed findings through review-findings, re-verifies, and opens or updates the PR."
+name: review-to-pr
+description: "Codex, Grok CLI and Copilot CLI workflow for review-to-pr. Verifies finished work, commits it locally, has a separate reviewer CLI review it read-only, applies the confirmed findings through review-findings, re-verifies, and opens or updates the PR."
 ---
 
-# Review Ship
+# Review to PR
 
 The code is written and the user wants it reviewed and published in one move. The review runs in a separate reviewer CLI process, which starts with none of this session's context: the session that wrote the code reads it with the author's assumptions. The reviewer only reports. This session checks each finding against the code and applies the confirmed ones, so a reviewer can't push a change this session can't justify.
 
@@ -30,7 +30,7 @@ A calling skill (worktree-ship) may hand over its verification commands and the 
 
 Run from the repository root, with `<dir>` a new temporary directory outside the repository:
 
-    bash <review-ship-skill-dir>/scripts/review.sh <reviewer> <comparison-ref> <dir>/findings.md <dir>/review.log [--model <m>] [--level <l>]
+    bash <review-to-pr-skill-dir>/scripts/review.sh <reviewer> <comparison-ref> <dir>/findings.md <dir>/review.log [--model <m>] [--level <l>]
 
 - **Codex host:** request escalated permissions for this one command, with the justification that the reviewer CLI needs network access and writes its own state outside the workspace. Inside the sandbox every reviewer CLI fails. The automatic approver may refuse to send a private repository's diff to an external reviewer unless the user approved that in the request. If it refuses, stop and ask the user to approve sending the diff to the named reviewer.
 - **Copilot host:** in `-p` mode Copilot reads only files under the working directory. If this skill's references or `scripts/review.sh` can't be read, stop and tell the user to launch Copilot with `--add-dir` for the installed skills directory (and the directory its links point to). Don't improvise the workflow without them.

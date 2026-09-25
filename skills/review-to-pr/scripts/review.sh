@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# review-ship reviewer driver for the Codex, Grok CLI and Copilot CLI hosts.
+# review-to-pr reviewer driver for the Codex, Grok CLI and Copilot CLI hosts.
 #
 # Usage: review.sh <reviewer> <base-ref> <findings-out> <log> [--model <m>] [--level <l>]
 #   reviewer: claude | codex | grok | copilot
