@@ -1,6 +1,6 @@
 ---
 name: delegate-plan
-description: Claude Code only. Hand an approved implementation plan to an executor (codex, grok or copilot headless in auto mode, or a claude subagent) that implements it inside a worktree at the exact grounded commit, then bring back git-derived evidence and stop at the operator's decision. The executor implements only; it never stages, commits, pushes or opens a PR. Trigger on "/delegate-plan <executor> [--model <m>] [--effort <e>] [plan]", "/delegate-plan <executor> --resume", "/delegate-plan status", and any request to have codex, grok, copilot or a claude subagent implement or continue a plan, or to check on a running delegation. Do NOT use to have this session implement (worktree-ship), to review a plan (delegate-plan-review, final-plan-check), to prepare settled decisions for an executor missing context (plan-implementation), or to commit and open the PR (the operator's /commit-open-pr, after this skill stops).
+description: Claude Code only. Hand an approved implementation plan to an executor (codex, grok or copilot headless in auto mode, or a claude subagent) that implements it inside a worktree at the exact grounded commit, then bring back git-derived evidence and stop at the operator's decision. The executor implements only; it never stages, commits, pushes or opens a PR. Trigger on "/delegate-plan <executor> [--model <m>] [--effort <e>] [plan]", "/delegate-plan <executor> --resume", "/delegate-plan status", and any request to have codex, grok, copilot or a claude subagent implement or continue a plan, or to check on a running delegation. Do NOT use to have this session implement (worktree-ship), to review a plan (delegate-plan-review, final-plan-check), to prepare settled decisions for an executor missing context (plan-implementation), or to review, commit and open the PR (the operator's /review-ship or /commit-open-pr, after this skill stops).
 compatibility: Requires Claude Code as the host; Codex, Grok, and Copilot may be delegated executors. Requires jq, the Monitor tool, and the chosen executor CLI (codex, grok or copilot) authenticated; the claude executor needs only the Agent tool.
 ---
 
@@ -244,8 +244,8 @@ the worktree path, the run dir, and one before/after diagram per the `delta-diag
 Close with the operator's menu. Print the first two lines only when your own re-run of the
 closing verification is green, whatever `result.json.status` said:
 
-      Review first (fresh session):  /code-review high --fix
-      Ship it:                       /commit-open-pr   (say the executor already ran simplify, skip the cleanup)
+      Review and ship:               /review-ship --model opus
+      Ship without review:           /commit-open-pr   (say the executor already ran simplify, skip the cleanup)
       Not finished:                  /delegate-plan <executor> --resume "<instruction>"
       Discard:                       git worktree remove --force <worktree>
 

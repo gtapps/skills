@@ -1,6 +1,6 @@
 ---
 name: worktree-ship
-description: "Implement an approved plan in a Git worktree, verify it, and publish a pull request using Codex, Grok CLI, or Copilot CLI."
+description: "Implement an approved plan in a Git worktree, verify it, and publish a reviewed pull request through review-ship, using Codex, Grok CLI, or Copilot CLI."
 ---
 
 # Worktree Ship
@@ -16,6 +16,8 @@ Treat the approved plan as the contract. Execute it without re-litigating scope.
 4. If the originating checkout has changes whose relationship to the approved plan is unclear, stop and ask. A new worktree starts from a commit and will not inherit uncommitted changes.
 
 ## Create the worktree
+
+With `--no-worktree`, skip this section and implement in the current checkout: review-ship creates the branch before anything is committed. Stop and ask first if the checkout is on a branch other than the default one that isn't this task's branch.
 
 Honor an explicit repository worktree convention first. Otherwise:
 
@@ -35,24 +37,16 @@ Never edit files in the originating checkout after entering the worktree. Do not
 3. Run the verification commands named in the plan. Otherwise derive them from AGENTS.md, package scripts, build files, and CI configuration.
 4. Do not proceed to commit while a relevant check is red. Fix and rerun it, or report the genuine blocker.
 
-## Repository publishing gates
+## Publish
 
-Immediately before publishing, run the repository's documented pre-push gates, including any release lock, migration check, or schema check. Use the repository's actual command and configuration; do not substitute a remembered project-specific path.
-
-Honor a failing gate, report its evidence, and do not publish or remove a lock to proceed. If no publishing gate is documented, do not invent one.
-
-## Publish and hand off
-
-1. Read and follow <commit-open-pr-skill-dir>/SKILL.md from inside the worktree.
-2. By default, hand off at the open PR for independent review. If the user also authorized review resolution, complete that scope using an independent reviewer; do not treat self-review as independent.
-3. Read and follow <delta-diagrams-skill-dir>/SKILL.md to render one end-to-end behavioral before/after.
-4. Report:
+1. Read and follow <review-ship-skill-dir>/SKILL.md from inside the worktree, passing through `--reviewer`, `--model` and `--level` when the user gave them, and the verification run above. It commits, has a separate reviewer CLI review the change, applies the confirmed findings, re-verifies, runs the publishing gates, and opens the PR. When it stops for the user (red verification, unsettled findings, a plan-contract question), this skill stops with it.
+2. Read and follow <delta-diagrams-skill-dir>/SKILL.md to render one end-to-end behavioral before/after.
+3. Report:
    - PR URL, title, and base branch.
    - Absolute worktree path and head branch.
-   - Exact verification commands and exit results.
+   - Exact verification commands and exit results, before and after the review.
+   - The reviewer and model, and each finding with its verdict.
    - The diagram.
-   - A handoff to a fresh review context in the chosen harness: review PR <URL> using the existing worktree at <absolute-worktree-path>, against <base-branch>.
-   - Give a native review command only after checking it is available in that CLI. Distinguish a local review result from a review actually submitted to GitHub.
 
 ## Guardrails
 

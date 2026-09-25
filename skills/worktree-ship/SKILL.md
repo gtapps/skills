@@ -1,6 +1,7 @@
 ---
 name: worktree-ship
 description: "Implement an approved plan in a Git worktree, verify it, and publish a pull request. Does not create the implementation plan."
+argument-hint: "[--no-worktree] [--level <l>] [--model <m>] [--reviewer <r>] [plan]"
 ---
 
 # Worktree Ship
