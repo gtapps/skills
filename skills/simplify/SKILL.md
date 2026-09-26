@@ -19,7 +19,7 @@ If the diff is empty, fall back only to files explicitly mentioned or modified i
 
 Read references/review-lenses.md completely before reviewing.
 
-When subagents and capacity are available, launch the required independent read-only lenses in parallel. This skill explicitly requests those agents. Use the running harness's exposed delegation tool: Codex's collaboration/spawn API, Grok's `spawn_subagent`, or Copilot's `task`. Follow its actual parameters and configured model defaults; do not require Claude's `Agent` tool or a Claude model. Give reviewers the raw scoped diff and minimal repository context, not expected findings. Reviewers must report proposals and must not edit files.
+When subagents and capacity are available, launch the required independent read-only lenses in parallel. This skill explicitly requests those agents; a small repository is not a reason to skip them, only the single-concern diff under twenty lines above is. Use the running harness's exposed delegation tool: Codex's collaboration/spawn API, Grok's `spawn_subagent`, or Copilot's `task`. Follow its actual parameters and configured model defaults; do not require Claude's `Agent` tool or a Claude model. Launch one reviewer per lens, and give each the cross-cutting rules, its own lens section, the JSON shape, the raw scoped diff and minimal repository context, not expected findings. Reviewers must report proposals and must not edit files.
 
 Collect every reviewer's result using the harness's supported wait/output mechanism before applying changes. In a headless run, do not end the run while reviewers are pending. When agents or a usable completion mechanism are unavailable, review serially and disclose that the review was not independent. Scale the lenses to the actual diff; preserve behavior and staging boundaries.
 
@@ -38,4 +38,4 @@ Never stop to ask about an ambiguous style preference. Record the proposal as no
 
 ## Report
 
-Report the changes, material proposals not applied and why, and relevant verification. Omit empty bookkeeping categories.
+Report whether the lenses ran as independent agents or serially, the changes, material proposals not applied and why, suspected bugs the reviewers noted (for the code review, not fixed), and relevant verification. Omit empty bookkeeping categories.

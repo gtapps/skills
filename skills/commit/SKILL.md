@@ -24,7 +24,7 @@ Before cleanup, record staged files that also have unstaged changes. Inspect the
 
 Unless the user passed `--no-simplify` or explicitly requested skipping cleanup for a trivial typo, documentation, or comment-only commit:
 
-1. Invoke the available `simplify` skill with mode set to staged-only.
+1. Invoke the available `simplify` skill in staged-only mode, and say the scope in plain words: review and edit only what `git diff --staged` shows, leaving unstaged and untracked work out. Claude Code's bundled `/simplify` has no mode parameter and reads its argument as a review target, so the plain wording is what keeps it on the staged diff.
 2. Surface its concise report.
 3. Re-stage each file simplify changed only when that file had no pre-existing unstaged changes.
 4. If a changed file already had unstaged work, stop. A whole-file git add would mix unrelated hunks; let the user stage the cleanup interactively or authorize the whole file.

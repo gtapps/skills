@@ -59,7 +59,7 @@ Seek decisive evidence, not a confirming verdict. Never increase effort merely t
 
 Do NOT pass `--no-session-persistence` — since at least CC 2.1.207 it errors out in interactive mode ("can only be used with --print mode") and the session dies at launch. The scratch dir keeps transcripts contained; no persistence flag is needed.
 
-Model rule: follow the reasoning policy above; probes of the auto-mode safety classifier require `--model sonnet` (haiku silently falls back to acceptEdits and you'd measure the wrong thing). `<mode>` is the permission mode the question needs: `plan`, `acceptEdits`, or `bypassPermissions`.
+Model rule: follow the reasoning policy above; probes of the auto-mode safety classifier require `--model sonnet` (haiku silently falls back to acceptEdits and you'd measure the wrong thing). `<mode>` is the permission mode the question needs: `plan`, `acceptEdits`, `auto`, or `bypassPermissions`. When the probe only needs tools to run unattended, use `auto` with `--model sonnet` (on haiku it falls back to acceptEdits, which still prompts for Bash and stalls the probe): from an auto-mode host, the classifier blocks a `bypassPermissions` launch as "Create Unsafe Agents" (CC 2.1.283, 2026-09-26), and the operator's standing choice is `--permission-mode auto`. Use `bypassPermissions` only when the question is about that mode.
 
 Append `--debug` to the launch command when the instrument is the `--debug` log (gotcha 6).
 
