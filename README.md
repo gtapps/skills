@@ -42,7 +42,7 @@ For example:
 ```
 
 - `plan-implementation` does not plan. It turns settled decisions into the `## Steps` and `## Closing verification` blocks that `delegate-ship` runs, so use it whenever a fresh context or another executor implements.
-- `plan-pipeline` runs grilling, grounding, review, the final check, and `plan-implementation` with one approval. Go by hand to set the reviewer's `--model` or `--effort`.
+- `plan-pipeline` runs grilling, grounding, optional design review, `plan-implementation` when needed, optional handoff review, and the final check with one approval. Plan mode is optional. Both external reviews use `delegate-plan-review --verify`; include optional `--model` and `--effort` flags with the harness in your answer at either review checkpoint.
 - `delegate-ship` prints a `/goal` line; paste it so the session keeps going until the PR is open. If it stops to ask you, the goal ends; answer and paste the reprinted line.
 - Executors are `grok`, `codex`, `copilot`, or `claude`. `/delegate-plan status` checks a running delegation. `/delegate-plan` alone stops at verified, uncommitted changes; `/worktree-ship` has the current session implement instead.
 - `review-to-pr` runs `/code-review --fix` in a subagent with no session history, so there's no `/clear` and no second session. `--model <m>` picks the reviewer's model (default: the session's) and `--level` the review level (default `high`).
@@ -71,7 +71,7 @@ In Codex, Grok CLI, or Copilot CLI: `tackle-task`, draft a plan, `final-plan-che
 | Skill | What it does |
 |---|---|
 | [tackle-task](skills/tackle-task/SKILL.md) | Investigates an issue or proposal and recommends whether to proceed; read-only |
-| [plan-pipeline](skills/plan-pipeline/SKILL.md) | Runs the whole planning chain in plan mode, ending in one approval |
+| [plan-pipeline](skills/plan-pipeline/SKILL.md) | Runs the whole planning chain, ending in one approval; plan mode is optional |
 | [plan-implementation](skills/plan-implementation/SKILL.md) | Turns settled decisions into an executor-ready plan |
 | [final-plan-check](skills/final-plan-check/SKILL.md) | Critiques a plan against the code, scope, and complexity |
 | [delegate-plan-review](skills/delegate-plan-review/SKILL.md) | Gets a second opinion from another harness; `--verify` checks it first |
