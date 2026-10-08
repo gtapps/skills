@@ -34,7 +34,7 @@ Save the grounded design in the plan file, including its reasoning and alternati
 
 **5. Optional design review.** Ask one AskUserQuestion: "Review the design before preparing the implementation handoff? You can include --model and --effort in your answer." with options codex, grok, copilot, claude, and Skip.
 
-At either review checkpoint, accept a harness alone or with optional flags in the free-text answer, for example `codex --model <model-name> --effort high`. Forward only the flags the operator supplied to `delegate-plan-review`; let that skill resolve omitted options from its existing configuration and harness defaults, including Claude's handling of unsupported effort. Treat the two review choices independently, without carrying flags from the earlier review into the later one or asking a separate question just for flags.
+At either review checkpoint, accept a harness alone or with optional flags in the free-text answer, for example `codex --model <model-name> --effort high`. Forward only the flags the operator supplied to `delegate-plan-review`; let that skill resolve omitted options from its existing configuration and harness defaults. Treat the two review choices independently, without carrying flags from the earlier review into the later one or asking a separate question just for flags.
 
 - A harness: invoke `delegate-plan-review <harness> [--model <m>] [--effort <e>] --verify <plan-path>` on the grounded design. Apply verified corrections through that skill and resolve material design choices with the operator before conversion. Record the verdict under `## Review trail`, labeled design review.
 - Skip: record the design review as skipped and continue the existing pipeline.

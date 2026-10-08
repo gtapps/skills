@@ -31,9 +31,10 @@ Invocation: `/delegate-plan codex|grok|copilot|claude [--model <m>] [--effort <e
 
 Model and effort: the flag if given, else the executor's entry in `config.json`, else
 whatever the harness does on its own (`null`). Never pick one here. Both are frozen into
-`freeze.json` at step 4, so a resume runs with the same values. The claude executor takes
-`--model` (it becomes the Agent call's `model`) but has no effort control: when an effort
-resolves for claude, say in one line that it is ignored, and go on.
+`freeze.json` at step 4, so a resume runs with the same values. For the claude executor,
+`--model` becomes the Agent call's `model` and `--effort` its `effort`. Claude's levels are
+`low`, `medium`, `high`, `xhigh` and `max`; if the flag or claude's `config.json` entry is
+anything else, stop before creating the worktree and say so. Never drop it and go on.
 
 Names used below: `<repo>` is the basename of `git rev-parse --show-toplevel`;
 `<branch-slug>` is the branch with `/` replaced by `-`; the worktree directory `<name>` is
@@ -125,8 +126,12 @@ signal:
     Agent(subagent_type: "general-purpose",
           description: "delegate-plan claude on <branch>",
           model: <freeze.json.model, only when non-null>,
+          effort: <freeze.json.effort, only when non-null>,
           prompt: "Your cwd is <worktree>. Read <run-dir>/prompt.md and follow it exactly.
                    Your final reply must be only the JSON object it asks for, nothing else.")
+
+The effort also reaches the reviewer subagents the executor dispatches, and a `SendMessage`
+resume keeps it (probed on CC 2.1.295).
 
 Tell the operator it is running and that they can keep working. What claude lacks, say
 once: no `DELEGATE_STALL`, no 30m cap, no `session.txt`, and the subagent runs in this
@@ -304,7 +309,7 @@ Each executor runs in its CLI's auto mode, narrowed to what implementing needs:
   unlisted, and an executor legitimately writes things like `runner; status=$?; exit $status`.
 - **claude**: a general-purpose subagent in this session's permission mode (it inherits
   it). No mechanical git fence: the wrapper's prose is the gate, and `git.json.committed`
-  is the check. Model from `--model` or `config.json`; effort not settable on a subagent.
+  is the check. Model and effort from the flags or `config.json`.
 
 The exact flags live in the driver scripts; edit them there. Model and effort defaults
 live in `config.json`, never in this file or the drivers.
@@ -333,6 +338,6 @@ live in `config.json`, never in this file or the drivers.
 - Don't edit `~/.codex/config.toml`, `~/.grok/config.toml` or `~/.copilot/config.json`;
   every override is on the CLI.
 - Don't hardcode a model or effort anywhere in this skill; the flag wins, then
-  `config.json`, then the harness default. Don't pass `model` to the claude Agent call
-  when it resolved to null; the subagent then inherits the session's model, which is what
-  the operator expects.
+  `config.json`, then the harness default. Don't pass `model` or `effort` to the claude
+  Agent call when it resolved to null; the subagent then inherits the session's value, which
+  is what the operator expects.

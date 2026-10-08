@@ -38,9 +38,10 @@ harness, so two reviews differ only in who wrote them.
 Invocation: `/delegate-plan-review codex|grok|copilot|claude [--model <m>] [--effort <e>] [--verify] [plan]`.
 
 Model and effort: the flag if given, else the harness entry in `config.json`, else the
-harness default (`null`). Never pick one here. The claude harness takes `--model` (it becomes
-the Agent call's `model`) but has no effort control; when an effort resolves for claude, say
-in one line that it is ignored and go on.
+harness default (`null`). Never pick one here. For the claude harness, `--model` becomes the
+Agent call's `model` and `--effort` its `effort`. Claude's levels are `low`, `medium`, `high`,
+`xhigh` and `max`; if the flag or claude's `config.json` entry is anything else, stop before
+launching and say so. Never drop it and go on.
 
 ## Files
 
@@ -95,6 +96,7 @@ only. Concatenate `prompt.md` and `plan.txt` into `<workdir>/prompt-full.md` fir
     Agent(subagent_type: "Plan",
           description: "claude reviewing the plan",
           model: <resolved model, only when non-null>,
+          effort: <resolved effort, only when non-null>,
           prompt: "Read <workdir>/prompt-full.md (the review ask followed by the plan) and
                    answer it, grounded in the repository at <cwd>: read its files and git
                    history as needed. Read only; write nothing. Reply with the review in the
