@@ -71,7 +71,7 @@ Append `--debug` to the launch command when the instrument is the `--debug` log 
 
     tmux pipe-pane -o -t "$S" "cat >> $D/probe.log"
 
-**3b. Trust dialog.** The step 1 seed skips the workspace-trust dialog ("Is this a project you created or one you trust?"). Never answer it with a blind Enter: on CC 2.1.301 and 2.1.316 the highlighted option is "No, exit", so Enter kills the session. If the dialog still appears, the seed did not take: kill the session, fix the seed, and relaunch.
+**3b. Trust dialog.** The step 1 seed skips the workspace-trust dialog ("Is this a project you created or one you trust?"). Never answer it with a blind Enter: on CC 2.1.301 and 2.1.316 the highlighted option is "No, exit", so Enter kills the session. If the dialog still appears, the seed did not take: kill the session and record the arm INCONCLUSIVE.
 
 **4. Readiness wait — ONCE.** Use the `Monitor` tool (load via `ToolSearch "select:Monitor"` if deferred) to wait until the mode footer appears in `$D/probe.log` (`shift+tab to cycle`, or `for shortcuts` in manual mode, seen on CC 2.1.316); timeout 60s. Never wait on `❯`: the trust dialog uses it as its cursor. Do not sleep-loop.
 

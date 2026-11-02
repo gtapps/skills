@@ -41,7 +41,11 @@ Seek decisive evidence, not a confirming verdict. Never increase effort merely t
 
 ## Protocol
 
-1. Choose a unique `probe-<slug>-<run-id>` session name and create one exact scratch directory with `mktemp -d /tmp/probe-<slug>-<run-id>.XXXXXX`. Record its resolved absolute path, require it to match `/tmp/probe-<slug>-<run-id>.*`, and put only minimal fixtures there.
+1. Choose a unique `probe-<slug>-<run-id>` session name and create one exact scratch directory with `mktemp -d /tmp/probe-<slug>-<run-id>.XXXXXX`. Record its resolved absolute path, require it to match `/tmp/probe-<slug>-<run-id>.*`, and put only minimal fixtures there. Then pre-seed workspace trust for `$D` (back up `~/.claude.json` once per probe first):
+
+       jq --arg d "$D" '.projects[$d].hasTrustDialogAccepted = true' ~/.claude.json > ~/.claude.json.tmp && mv ~/.claude.json.tmp ~/.claude.json
+
+   With two arms, seed both before launching either, because a running session may rewrite `~/.claude.json`. If the outer CLI cannot write that file, report the probe INCONCLUSIVE.
 2. Create a one-shot FIFO with `mkfifo "$D/launch.fifo"` inside the scratch directory. Start the tmux pane with a shell that blocks on one read from that FIFO and then `exec`s the real interactive Claude command:
 
        tmux new-session -d -s "$S" -x 220 -y 50 -c "$D" \
@@ -56,12 +60,11 @@ Seek decisive evidence, not a confirming verdict. Never increase effort merely t
    Release the FIFO once with `printf '\n' > "$D/launch.fifo"`, causing the pane shell to become the real Claude process. This closes the startup-output race: every dialog is logged before the readiness phase begins.
 4. Perform one readiness phase, bounded to 60 seconds, through one long-running `timeout` plus `tail -F` command session. It must:
 
-   - wait for the workspace-trust dialog or the normal input prompt;
-   - when the trust dialog is present, send Down, confirm `❯ Yes, I trust this folder` is selected, then send Enter. Never send Enter while `No, exit` is selected;
-   - after accepting trust, continue in the same bounded readiness command until the normal prompt appears;
-   - exit immediately when the normal prompt is ready.
+   - wait for the mode footer (`shift+tab to cycle`, or `for shortcuts` in manual mode, seen on CC 2.1.316). Never wait on `❯`: the trust dialog uses it as its cursor;
+   - also match the trust dialog text `Is this a project you created`, which means the seed did not take: kill the session and report INCONCLUSIVE;
+   - exit immediately when either matches.
 
-   Do not assume the trust dialog appears. Do not send blind input or answer any other modal. Do not sleep-loop, poll, or repeatedly capture the pane.
+   Send no input during readiness. Do not sleep-loop, poll, or repeatedly capture the pane.
 5. Send the complete probe prompt literally, then send Enter separately.
 6. Generate a unique completion nonce and split it into two fragments. The complete nonce must never appear contiguously in the injected prompt. End the prompt by giving the fragments separately and instructing Claude to concatenate them in the final line, for example:
 
@@ -84,7 +87,7 @@ Never capture the pane before a timeout.
 
 ## Teardown and report
 
-Kill only the named tmux session. Before cleanup, resolve and revalidate that the scratch path is the exact recorded `/tmp/probe-<slug>-<run-id>.*` directory. Remove only that directory using `rm -r`, never `rm -rf`, unless the user asked to retain evidence.
+Kill only the named tmux session. Before cleanup, resolve and revalidate that the scratch path is the exact recorded `/tmp/probe-<slug>-<run-id>.*` directory. Remove the trust seed with `jq --arg d "$D" 'del(.projects[$d])' ~/.claude.json > ~/.claude.json.tmp && mv ~/.claude.json.tmp ~/.claude.json`. Remove only that directory using `rm -r`, never `rm -rf`, unless the user asked to retain evidence.
 
 Report:
 
@@ -105,7 +108,7 @@ Include the tested Claude version and any missing measurement. Save the result u
 - A non-tmux terminal fallback.
 - `--no-session-persistence` in the interactive Claude command.
 - Launching Claude before `pipe-pane` is attached.
-- Blind trust-dialog input or input to an unrecognized modal.
+- Input to the trust dialog or to an unrecognized modal.
 - A completion token that appears contiguously in the injected prompt.
 - Sleep loops, repeated polling, or repeated `capture-pane`.
 - More than one readiness wait or one completion wait.

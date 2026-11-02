@@ -13,6 +13,7 @@ These findings come from the existing Claude-native probe workflow. They are inv
 
 - On Claude 2.1.232, an untrusted scratch workspace could execute tools while skipping hooks; debug output reported `workspace trust not accepted`.
 - On Claude 2.1.258, `acceptEdits` could still prompt for a write in an untrusted scratch workspace. A pending call was not proof of execution.
+- On Claude 2.1.316, `IS_DEMO` skipped the trust dialog while leaving the workspace untrusted, and a trusted parent directory counted as trust.
 - Claude 2.1.232 exposed `permissionDecisionMs` in debug logs for some permission decisions. Confirm its meaning and presence before using it as a timing instrument.
 
-Establish trust through the documented flow only when the actual dialog is present and authorization permits it. Do not silently edit the user's global trust database or blindly answer an unrecognized permission prompt to complete a probe. A probe that cannot establish its prerequisites is INCONCLUSIVE.
+Establish trust only through the workflow's seed of the exact scratch directory. Do not edit any other trust entry, and do not answer the trust dialog or an unrecognized permission prompt to complete a probe. A probe that cannot establish its prerequisites is INCONCLUSIVE.
