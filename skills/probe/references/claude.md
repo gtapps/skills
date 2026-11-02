@@ -13,7 +13,7 @@ description: "Consult shared Claude Code probe results or empirically answer a h
 
 ## Autonomy
 
-A scratch fixture is yours to run: its own directory from `mktemp -d`, its own tmux session, torn down at the end. Once the question is clear, run it and report the verdict; never ask "want me to run the probe?" Ask first only when the target is a live resident session, a real project file, or anything outside the scratch dir. The `~/.claude.json` trust seed in the hook gotchas stays as written there: back up, edit, delete the entry at teardown.
+A scratch fixture is yours to run: its own directory from `mktemp -d`, its own tmux session, torn down at the end. Once the question is clear, run it and report the verdict; never ask "want me to run the probe?" Ask first only when the target is a live resident session, a real project file, or anything outside the scratch dir. The `~/.claude.json` trust seed in steps 1 and 8 stays as written there: back up, edit, delete the entry at teardown.
 
 ## Shared results
 
@@ -51,7 +51,11 @@ Seek decisive evidence, not a confirming verdict. Never increase effort merely t
 
 ## Protocol
 
-**1. Setup (per arm).** `S=probe-<slug>-<arm>`; `D=$(mktemp -d /tmp/$S.XXXX)`. Write any minimal fixtures into `$D` only. With two arms, run steps 1 to 3b for both, back to back, before any wait.
+**1. Setup (per arm).** `S=probe-<slug>-<arm>`; `D=$(mktemp -d /tmp/$S.XXXX)`. Write any minimal fixtures into `$D` only. Then pre-seed workspace trust for `$D` (back up `~/.claude.json` once per probe first):
+
+    jq --arg d "$D" '.projects[$d].hasTrustDialogAccepted = true' ~/.claude.json > ~/.claude.json.tmp && mv ~/.claude.json.tmp ~/.claude.json
+
+With two arms, run step 1 for both before launching either (a running session may rewrite `~/.claude.json`), then steps 2 to 3b for both, back to back, before any wait.
 
 **2. Launch the real session:**
 
@@ -67,9 +71,9 @@ Append `--debug` to the launch command when the instrument is the `--debug` log 
 
     tmux pipe-pane -o -t "$S" "cat >> $D/probe.log"
 
-**3b. Trust dialog.** A fresh scratch dir always triggers the workspace-trust dialog ("Is this a project you created or one you trust?"), and pre-approved permissions in `.claude/settings.local.json` add a confirmation to it. Send one Enter ~5s after launch to accept the default ("Yes, I trust this folder"): `tmux send-keys -t "$S" Enter`. Safe if the dialog already passed — a stray Enter on an empty prompt is a no-op.
+**3b. Trust dialog.** The step 1 seed skips the workspace-trust dialog ("Is this a project you created or one you trust?"). Never answer it with a blind Enter: on CC 2.1.301 and 2.1.316 the highlighted option is "No, exit", so Enter kills the session. If the dialog still appears, the seed did not take: kill the session, fix the seed, and relaunch.
 
-**4. Readiness wait — ONCE.** Use the `Monitor` tool (load via `ToolSearch "select:Monitor"` if deferred) to wait until the prompt marker appears in `$D/probe.log` (the `❯` prompt line, or the mode footer `shift+tab to cycle`; "? for shortcuts" is not printed on CC 2.1.258); timeout 60s. Do not sleep-loop.
+**4. Readiness wait — ONCE.** Use the `Monitor` tool (load via `ToolSearch "select:Monitor"` if deferred) to wait until the mode footer appears in `$D/probe.log` (`shift+tab to cycle`, or `for shortcuts` in manual mode, seen on CC 2.1.316); timeout 60s. Never wait on `❯`: the trust dialog uses it as its cursor. Do not sleep-loop.
 
 **5. Inject the probe.** Send the prompt as a literal, then Enter as a separate call:
 
@@ -88,7 +92,7 @@ The prompt MUST end by requiring one final line of the form `PROBE_VERDICT_<nonc
 
 The munged dir is `$D` with every `/` and `.` turned into `-` (it starts with a dash, so always pass the absolute path). A match there is model output by construction: the user entry holds only the prompt fragments. Quote the verbatim line, plus the arm's tool_use names from the same jsonl, in a `## Probe verdict` block: claim, full launch command, effective model/thinking/effort settings and any exception rationale, verbatim evidence, verdict.
 
-**8. Teardown.** `tmux kill-session -t "$S"`; `rm -r "$D"` (never `rm -rf`) unless the operator asked to keep it.
+**8. Teardown.** `tmux kill-session -t "$S"`; remove the trust seed with `jq --arg d "$D" 'del(.projects[$d])' ~/.claude.json > ~/.claude.json.tmp && mv ~/.claude.json.tmp ~/.claude.json`; `rm -r "$D"` (never `rm -rf`) unless the operator asked to keep it.
 
 **9. Save.** Follow Shared results above. Include each verbatim `PROBE_VERDICT_<nonce>` line (or INCONCLUSIVE plus the final 20 pane lines), the declaration block, and each arm's exact Claude transcript path. The Claude transcript survives scratch teardown. Every probe ends here, INCONCLUSIVE included.
 
@@ -111,9 +115,7 @@ When launching a probe, print this line before any setup so the operator can pas
 
 Probing hook behavior (payload shape, firing order) has extra traps:
 
-1. **`--permission-mode <mode>` suppresses the workspace-trust dialog but records trust as NOT accepted — and untrusted workspaces silently skip ALL hook execution.** Tools still run, `/hooks` still lists the hooks as configured, nothing errors. The only tell is `--debug`: `Skipping PreToolUse:Bash hook execution - workspace trust not accepted` in `~/.claude/debug/<id>.txt`. Fix BEFORE launching a hook probe: pre-seed trust for the scratch dir —
-   `jq '.projects["<scratch>"].hasTrustDialogAccepted = true' ~/.claude.json > t && mv t ~/.claude.json`
-   (back up `~/.claude.json` first; delete the entry at teardown). A plain launch without `--permission-mode` may not show the dialog either, so don't rely on answering it interactively.
+1. **Workspace trust is independent of `--permission-mode`.** Without trust, the dialog appears in every mode (step 3b). With `IS_DEMO` set, the dialog is skipped but the workspace stays untrusted, and untrusted workspaces silently skip ALL hook execution. Tools still run, `/hooks` still lists the hooks as configured, nothing errors. The only tell is `--debug`: `Skipping PreToolUse:Bash hook execution - workspace trust not accepted` in `~/.claude/debug/<id>.txt`. The step 1 seed prevents this. Trust from a parent directory also counts, so an unseeded `/tmp` run proves nothing about dialog behavior.
 2. **Plugin `hooks/hooks.json` needs `"command": "<exe>", "args": [...]` (argv array).** A single command string with embedded spaces registers, renders correctly in `/hooks`, and never runs. Settings-file hooks accept the single-string form; plugin hooks do not.
 3. **Permission `allow` rules in a scratch project's `.claude/settings.json` do not reliably suppress the WebFetch dialog** (even `WebFetch(domain:...)`). Script an auto-answer into the completion Monitor: if the pane shows `allow Claude to fetch`, send `1` + Enter.
 4. **Capture hook stdin to a file the hook writes itself** (`{ printf '%s|' "$1"; cat; echo; } >> <scratch>/payloads.log`), and key the completion wait on the payload file, not the model's sentinel — a dialog stall then can't hide a successful capture.

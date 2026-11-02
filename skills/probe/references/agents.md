@@ -57,7 +57,7 @@ Seek decisive evidence, not a confirming verdict. Never increase effort merely t
 4. Perform one readiness phase, bounded to 60 seconds, through one long-running `timeout` plus `tail -F` command session. It must:
 
    - wait for the workspace-trust dialog or the normal input prompt;
-   - send Enter once only when the trust dialog is actually present;
+   - when the trust dialog is present, send Down, confirm `❯ Yes, I trust this folder` is selected, then send Enter. Never send Enter while `No, exit` is selected;
    - after accepting trust, continue in the same bounded readiness command until the normal prompt appears;
    - exit immediately when the normal prompt is ready.
 
