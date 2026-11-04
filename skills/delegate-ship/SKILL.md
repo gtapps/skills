@@ -28,14 +28,14 @@ delegate-plan's report closes with an operator menu and "do not review, stage, c
 
     bash <delegate-plan-skill-dir>/scripts/verify.sh <run-dir>
 
-and print its `<exit>  <command>` table verbatim. Every row comes from the plan's Closing verification block. A red row stops the pipeline here with the table shown; the executor's `result.json` claims are not evidence.
+and print its `<exit>  <command>` table verbatim. Every row comes from the plan's Closing verification block. A red row stops the pipeline here with the table shown; the executor's `result.json` claims are not evidence. Before step 4, independently confirm every plan step is complete and no stop or approval requirement remains unresolved. A stopped run, usage limit, or absent `result.json` does not establish completion, even when closing verification is green.
 
 **4. Review and publish.** Invoke `review-to-pr --level high --model opus`. The executor may be a lower-effort or non-Claude harness, so the review runs on Opus whatever the session model is. Hand it:
 - the goal line from step 1 (review-to-pr prints none of its own);
 - `bash <delegate-plan-skill-dir>/scripts/verify.sh <run-dir>` as its verification command (plus the smoke below, when the plan names a protocol), with the step 3 table as its pre-review run;
 - the section below as an extra PR body section.
 
-review-to-pr commits the executor's tree without simplify (the executor already ran its own), runs the review in a fresh-context Opus subagent, re-verifies, and opens the PR. It halts on a red table, unfixed findings, or a finding that reverses a plan contract. On a contract halt, edit the plan file to record the new contract after the operator's Yes. The PR body section:
+When `result.json.notes` records `simplify: ran`, tell review-to-pr the cleanup already ran so it commits without another simplify pass. Otherwise, including missing notes or `result.json`, run `/simplify` here first, then re-verify and pass that same cleanup instruction to review-to-pr. review-to-pr then runs the review in a fresh-context Opus subagent, re-verifies, and opens the PR. It halts on a red table, unfixed findings, or a finding that reverses a plan contract. On a contract halt, edit the plan file to record the new contract after the operator's Yes. The PR body section:
 
     ## Blast radius
     - Released surfaces touched: ...
@@ -57,4 +57,5 @@ If the plan names an external protocol (a wire format, an MCP or HTTP contract, 
 - Never reset --hard. On a rejected push: fetch, rebase, re-run verify.sh, push again.
 - Don't reimplement `delegate-plan` or `review-to-pr`; invoke them.
 - Don't wait on the executor with sleep or status polls; the Monitor, or the agent completion for claude, wakes you.
+- This skill narrowly overrides delegate-plan's stopped-run rule when the approved plan and evidence determine exactly one answer (e.g. an under-counted table whose new rows can take only one label). Derive the complete answer before spending a resume, check that it fits the plan's Ask and Decisions, record it in the plan file, say so in one line, and resume with `--resume "<the answer>"` under delegate-plan's `resumes < 2` cap. This never overrides an explicit approval requirement, scope limit, or denied permission gate. If a real choice remains or the answer cannot be derived, halt for the operator.
 - GUEST_REPORT is not a step here. Sessions in a hermit-managed repo already receive that mandate from the project's startup context.
