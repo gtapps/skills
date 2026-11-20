@@ -51,6 +51,8 @@ cfg() {
 [ -n "$MODEL" ]  || MODEL=$(cfg ".[\"$EXEC\"].model")
 [ -n "$EFFORT" ] || EFFORT=$(cfg ".[\"$EXEC\"].effort")
 MAX_RESUMES=$(cfg '.max_resumes'); [ -n "$MAX_RESUMES" ] || MAX_RESUMES=2
+[[ "$MAX_RESUMES" =~ ^[0-9]+$ ]] \
+  || { echo "setup_run: max_resumes must be a non-negative integer, got '$MAX_RESUMES'" >&2; exit 2; }
 [ -f "$PLAN" ] || { echo "setup_run: no plan file at '$PLAN'" >&2; exit 2; }
 grep -q '^## Steps' "$PLAN" \
   || { echo "setup_run: $PLAN has no '## Steps' section" >&2; exit 2; }

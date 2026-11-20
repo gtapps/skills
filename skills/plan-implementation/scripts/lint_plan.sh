@@ -9,15 +9,16 @@ set -uo pipefail
 PLAN=$(cat "$1") || { echo "lint_plan: cannot read '$1'" >&2; exit 2; }
 FAIL=0
 bad() { echo "lint_plan: $*"; FAIL=1; }
-has() { grep -q "^$1\$" <<<"$PLAN"; }
+has() { grep -q "^$1[[:space:]]*\$" <<<"$PLAN"; }
 
 for h in '## Steps' '## Closing verification' '## Live gates'; do
   has "$h" || bad "missing heading '$h'"
 done
 
-# The same extraction verify.sh uses: the first fenced block under the heading.
+# The same extraction verify.sh uses: the first fenced block under the heading. It must open
+# before the next heading, or verify.sh would run a later section's block as the commands.
 if has '## Closing verification'; then
-  CV=$(awk '/^## Closing verification/{h=1;next} h&&/^```/{f++; if(f==2)exit; next} h&&f==1' <<<"$PLAN" \
+  CV=$(awk '/^## Closing verification/{h=1;next} h&&!f&&/^## /{exit} h&&/^```/{f++; if(f==2)exit; next} h&&f==1' <<<"$PLAN" \
        | sed '/^[[:space:]]*$/d')
   [ -n "$CV" ] || bad "'## Closing verification' has no fenced block of commands"
 fi
@@ -29,7 +30,8 @@ fi
 
 # Every step needs a Contract, and a Verify that holds a command in backticks on its own line.
 if has '## Steps'; then
-  DEFECTS=$(awk '/^## Steps/{s=1;next} s&&/^## /{s=0} s' <<<"$PLAN" | awk '
+  # Lines inside fenced blocks are snippets, never headings.
+  DEFECTS=$(awk '/^[[:space:]]*```/{f=!f; next} f{next} /^## Steps/{s=1;next} s&&/^## /{s=0} s' <<<"$PLAN" | awk '
     function flush() {
       if (t == "") return
       if (!c) print "step \"" t "\" has no Contract"

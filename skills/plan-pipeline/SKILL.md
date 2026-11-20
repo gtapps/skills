@@ -12,7 +12,7 @@ compatibility: Requires Claude Code as the host; Codex, Grok, and Copilot may be
 
 **1. Print the goal, name the plan.** Print this line first so the operator can paste it:
 
-    /goal The plan for <ISSUE> is ready for a single operator approval: the plan file is named <ISSUE>-<slug>.md; it contains a BEFORE/AFTER delta diagram, a worth-it ledger, a who-is-affected section, a where-it-lives decision, a `## Live gates` block and an answer to every declared planning lens; every premise about behavior outside the code cites its evidence or is listed as unverified; lint_plan.sh exits 0 on it; any delegate-plan-review --verify verdicts and the final-plan-check verdict are quoted, with an accept or reject recorded for each final-check item and skipped external reviews recorded; no approval was requested before those verdicts. Or this session has halted for the operator: its last message is a grilling question or a rejected-plan follow-up, with no operator reply yet. Or stop after 20 turns.
+    /goal The plan for <ISSUE> is ready for a single operator approval: the plan file is named <ISSUE>-<slug>.md; it contains a BEFORE/AFTER delta diagram, a worth-it ledger, a who-is-affected section, a where-it-lives decision, a `## Live gates` block and an answer to every declared planning lens; every premise about behavior outside the code cites its evidence or is listed as unverified; when it went through plan-implementation, lint_plan.sh exits 0 on it; any delegate-plan-review --verify verdicts and the final-plan-check verdict are quoted, with an accept or reject recorded for each final-check item and skipped external reviews recorded; no approval was requested before those verdicts. Or this session has halted for the operator: its last message is a grilling question or a rejected-plan follow-up, with no operator reply yet. Or stop after 20 turns.
 
 The goal evaluator is binary: a halt satisfies the goal and clears it, which keeps it from pushing past a question that belongs to the operator. So print this goal line again when grilling ends, before step 4, and at the end of every step 9 wait, so the operator can re-pin it.
 
@@ -71,7 +71,7 @@ A missing block is added now, from what the session already established; do not 
 - Approved: go to step 10.
 - Rejected with text: the text is an answer. Process it, edit the plan file, print what changed, and wait for the operator. Never request approval a second time without an operator reply in between. While a question is open, do not rewrite the plan beyond that answer.
 - Never type a slash command into a rejection. This skill invokes the next skill itself; the rejection channel is for the operator's words only.
-- Any edit to the plan after approval: apply it, rerun the lint and the fresh-context `final-plan-check` from step 7, and report both results before step 10. Do not ask first.
+- Any edit to the plan after approval: apply it, rerun the lint (when step 8 ran it) and the fresh-context `final-plan-check` from step 7, and report both results before step 10. Do not ask first.
 
 **10. On approval, print the next move** and stop:
 
@@ -83,7 +83,7 @@ or, when Claude implements it itself:
 
 ## Living gauntlet
 
-Step 7 of `final-plan-check` owns the operator's gate questions and the `wrap` skill keeps it current. Do not duplicate or hardcode those questions here.
+The planning questions live in the declared `## Planning lenses` sections that step 7 of `final-plan-check` reads, and the `wrap` skill keeps them current. Do not duplicate or hardcode those questions here.
 
 ## Don't
 
