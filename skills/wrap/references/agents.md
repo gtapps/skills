@@ -1,6 +1,6 @@
 ---
 name: wrap
-description: Close an operator session on disk. Classify learnings verified vs idea and route them (personal memory, or the destination the project's instructions name), run the project's mandated close (proposal-act, GUEST_REPORT) and show its output, refresh the final-plan-check gauntlet with any question that bounced a plan this session, write the loose-ends line, give the plan file its issue name, print a five-line close. Trigger on "/wrap", "save learnings", "save this as a learning", "wrap this up", "wrap up", "close the session", and proactively before ending any session that produced a verdict, a plan, or a measurement. Do NOT use to commit or push (commit, commit-push), to open a PR (open-pr), or to write a handoff document for another agent (handoff).
+description: Close an operator session on disk. Classify learnings verified vs idea and route them (personal memory, or the destination the project's instructions name), run the project's mandated close and show its output, refresh the final-plan-check gauntlet with any question that bounced a plan this session, write the loose-ends line, give the plan file its issue name, print a five-line close. Trigger on "/wrap", "save learnings", "save this as a learning", "wrap this up", "wrap up", "close the session", and proactively before ending any session that produced a verdict, a plan, or a measurement. Do NOT use to commit or push (commit, commit-push), to open a PR (open-pr), or to write a handoff document for another agent (handoff).
 ---
 
 # wrap
@@ -21,8 +21,8 @@ Every number in what you write is measured (the command and output appear in the
 - No destination named by the project: memory only, and say so.
 
 **3. Project-mandated close.** Run whatever those same instructions mandate at the end of a session, and show the output of each:
-- A proposal verdict reached this session: run the project's proposal-act equivalent (in hermit repos, `/Codex-hermit:proposal-act` accept, defer or dismiss). No verdict reached: no call, and do not invent one.
-- A guest report mandated by the startup context (in hermit repos, a `GUEST_REPORT:` line to the resident via SendMessage): send it. If the send is held for approval, also write it to the inbox file the instructions name, after checking that the path exists, and say which happened.
+- A proposal verdict reached this session: when the project's instructions name a command for acting on it, run that command (accept, defer or dismiss). No verdict reached: no call, and do not invent one.
+- A report to another session mandated by the startup context: send it the way the instructions say. If the send is held for approval, also write it to the inbox file the instructions name, after checking that the path exists, and say which happened.
 - Anything else the instructions list for session close (a progress-log entry, a session-close skill): run it.
 
 Nothing mandated (a plain repo, a scratch directory): say "no project close mandated" and move on.

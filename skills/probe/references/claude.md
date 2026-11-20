@@ -13,7 +13,7 @@ description: "Consult shared Claude Code probe results or empirically answer a h
 
 ## Autonomy
 
-A scratch fixture is yours to run: its own directory from `mktemp -d`, its own tmux session, torn down at the end. Once the question is clear, run it and report the verdict; never ask "want me to run the probe?" Ask first only when the target is a live resident session, a real project file, or anything outside the scratch dir. The `~/.claude.json` trust seed in steps 1 and 8 stays as written there: back up, edit, delete the entry at teardown.
+A scratch fixture is yours to run: its own directory from `mktemp -d`, its own tmux session, torn down at the end. Once the question is clear, run it and report the verdict; never ask "want me to run the probe?" Ask first only when the target is a live long-running session, a real project file, or anything outside the scratch dir. The `~/.claude.json` trust seed in steps 1 and 8 stays as written there: back up, edit, delete the entry at teardown.
 
 ## Shared results
 
