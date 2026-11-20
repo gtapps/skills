@@ -4,7 +4,9 @@
 # stdout line. It creates nothing else: no worktree, no cleanliness check, no launch.
 #
 # Usage: setup_run.sh <codex|grok|copilot|claude> <plan-path> [--model <m>] [--effort <e>]
-#   model/effort: the flag, else config.json in the skill dir, else null (harness default).
+#   model/effort: the flag, else ${XDG_CONFIG_HOME:-~/.config}/delegate-plan/config.json,
+#   else config.json in the skill dir, else null (harness default). max_resumes comes from
+#   the same two files, default 2.
 #   Both land in freeze.json; the drivers read them from there, so a resume reuses them.
 set -euo pipefail
 EXEC="${1:-}"; PLAN="${2:-}"; shift 2 || true
@@ -38,8 +40,17 @@ case "$EXEC" in
   *)      WAIT="$ONE_TURN" ;;
 esac
 CFG="$(cd "$(dirname "$0")/.." && pwd)/config.json"
-[ -n "$MODEL" ]  || MODEL=$(jq -r --arg e "$EXEC" '.[$e].model // empty'  "$CFG" 2>/dev/null || true)
-[ -n "$EFFORT" ] || EFFORT=$(jq -r --arg e "$EXEC" '.[$e].effort // empty' "$CFG" 2>/dev/null || true)
+# A user file overrides the tracked defaults, key by key, and survives skill updates.
+USER_CFG="${XDG_CONFIG_HOME:-$HOME/.config}/delegate-plan/config.json"
+cfg() {
+  local v=""
+  [ -f "$USER_CFG" ] && v=$(jq -r "$1 // empty" "$USER_CFG" 2>/dev/null || true)
+  [ -n "$v" ] || v=$(jq -r "$1 // empty" "$CFG" 2>/dev/null || true)
+  printf '%s' "$v"
+}
+[ -n "$MODEL" ]  || MODEL=$(cfg ".[\"$EXEC\"].model")
+[ -n "$EFFORT" ] || EFFORT=$(cfg ".[\"$EXEC\"].effort")
+MAX_RESUMES=$(cfg '.max_resumes'); [ -n "$MAX_RESUMES" ] || MAX_RESUMES=2
 [ -f "$PLAN" ] || { echo "setup_run: no plan file at '$PLAN'" >&2; exit 2; }
 grep -q '^## Steps' "$PLAN" \
   || { echo "setup_run: $PLAN has no '## Steps' section" >&2; exit 2; }
@@ -63,8 +74,9 @@ PLAN_SHA=$(sha256sum "$RUN/plan.md" | cut -d' ' -f1)
 
 jq -cn --arg e "$EXEC" --arg src "$PLAN" --arg ps "$PLAN_SHA" --arg sha "$SHA" \
   --arg br "$BRANCH" --arg wt "$WT" --arg run "$RUN" --arg m "$MODEL" --arg ef "$EFFORT" \
+  --argjson mr "$MAX_RESUMES" \
   '{executor:$e, plan_source:$src, plan_sha256:$ps, grounded_sha:$sha, branch:$br,
-    worktree:$wt, run_dir:$run, resumes:0,
+    worktree:$wt, run_dir:$run, resumes:0, max_resumes:$mr,
     model:(if $m == "" then null else $m end), effort:(if $ef == "" then null else $ef end)}' \
   > "$RUN/freeze.json"
 
