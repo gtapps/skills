@@ -15,7 +15,7 @@ A calling skill (worktree-ship, delegate-ship) may hand over its verification co
 
 **1. Print the goal, then prepare.** Print this line so the operator can pin it:
 
-    /goal The work on <branch> is shipped by review-to-pr: verification shown green before the review; the implementation committed locally before the review; /code-review <level> --fix ran in a subagent on <model>, and its own diff was shown; verification re-run green after it; the PR URL is shown. Or this session has halted for the operator: its last message is a red verification table, the numbered unfixed-findings list, a plan-contract question, or a question from commit, with no operator reply yet. Never reset --hard, amend or force-push; on push rejection fetch, rebase, re-verify, retry. Or stop after 25 turns.
+    /goal The work on <branch> is shipped by review-to-pr: verification shown green before the review; the implementation committed locally before the review; /code-review <level> --fix ran in a subagent on <model>, and its own diff was shown; verification re-run green after it; the PR URL is shown. Or this session has halted for the operator: its last message is a red verification table, a draft PR whose body lists Decisions needed, a plan-contract question that could not be separated by file, or a question from commit, with no operator reply yet. Never reset --hard, amend or force-push; on push rejection fetch, rebase, re-verify, retry. Or stop after 25 turns.
 
 When you halt for the operator, end the message with this goal line again, so the operator can re-pin it with their answer.
 
@@ -41,10 +41,19 @@ The wrapper is there only to set the model. A skill call takes no model argument
 
 **5. Check what the review did.** Print `git diff --stat <pre-review>`, leaving out the unrelated paths noted in step 3, and the diff itself when it is short. At `high` and above the review may apply findings it is less sure of, and this diff is where the operator sees them. Re-run verification and show the table again.
 - Red after the review: stop with the table and the review diff. The operator decides whether to keep or revert.
-- Findings left unfixed: print them as a numbered list and stop. The operator answers "1. agree 2. skip, because ...". Apply the agreed ones, re-verify, continue.
-- A finding that reverses a contract in an approved plan (a step's behavior, a verify command, the scope fence): halt for an explicit Yes, record the new contract in the plan file, then continue.
+- Findings left unfixed, with an approved plan in context: check each against the plan's Decisions, Ground rules and Out of scope. When the plan settles it, do what the plan says (fix it or leave it) and record one line: the finding, the plan line that settles it, what you did. Do not ask.
+- Fixes that correct a class of mistake (a fixture assumption, a missing guard, a wrong path form): search the repository for the same shape, and fix or list every other hit before re-verifying.
+- Findings the plan does not settle: do not stop here. Give each a recommendation (fix or skip, with the reason) and carry them to step 6 as `Decisions needed`.
+- A fix the review applied that reverses a contract in an approved plan (a step's behavior, a verify command, the scope fence): neither commit it nor discard it. When it touches only files no other fix touches, hold those files back (`git stash push -- <paths>`), re-verify the tree that will be committed, commit, then `git stash pop`, and carry it to step 6 as `Decisions needed`. When it cannot be separated by file, halt here for an explicit Yes and record the new contract in the plan file, as before.
 
 **6. Publish.** If the review changed files, invoke `commit --no-simplify` for them (the review's fixes don't get a second cleanup pass), never for the unrelated paths noted in step 3. Before any push, run the repo's documented pre-push gate if it has one (a release lock, a migration, schema or changelog check). A hold means print what the gate reported, don't push, and tell the operator to retry once it clears; never bypass or remove a gate. Then resume `open-pr` at Phase C with the context from step 3. It pushes, and it creates the PR or returns the one that already exists. The PR body states the review level and the reviewer model, and carries any sections the caller handed over.
+
+With any `Decisions needed` item, or an operator-owned gate still open in the plan's `## Live gates`, ask `open-pr` for a draft PR and add this section to the body:
+
+    ## Decisions needed
+    - D1: <finding or held-back fix>. Recommend: <fix | skip | accept the contract change>, because <reason>. If yes: <exact action>. If no: <exact action>.
+
+Then halt with the PR URL and that list. On the operator's answer: apply it (commit the held files or restore them, apply or drop a finding), record an accepted contract change in the plan file, re-verify, push, and run `gh pr ready` once no item and no operator-owned gate is open.
 
 **7. Report.** Lead with the PR URL. Then the verification tables from before and after the review, the reviewer model and level, the review's diff stat, and the findings with their fixed or skipped state. Pass through the follow-up lines open-pr prints, unchanged.
 
