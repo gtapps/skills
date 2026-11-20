@@ -12,7 +12,7 @@ compatibility: Requires Claude Code as the host; Codex, Grok, and Copilot may be
 
 **1. Print the goal, name the plan.** Print this line first so the operator can paste it:
 
-    /goal The plan for <ISSUE> is ready for a single operator approval: the plan file is named <ISSUE>-<slug>.md; it contains a BEFORE/AFTER delta diagram, a worth-it ledger (tokens per wake, wakes per day, added files/hooks, overlap with CC native / OpenClaw / Hermes), a blast-radius section (released vs unreleased surfaces, downstream operators, downstream hermits), and an explicit core-vs-plugin decision; every harness-behavior premise cites a PROBE_VERDICT or is listed as unprobed; any delegate-plan-review --verify verdicts and the final-plan-check verdict are quoted, with skipped external reviews recorded; no approval was requested before those verdicts. Or this session has halted for the operator: its last message is a grilling question or a rejected-plan follow-up, with no operator reply yet. Or stop after 20 turns.
+    /goal The plan for <ISSUE> is ready for a single operator approval: the plan file is named <ISSUE>-<slug>.md; it contains a BEFORE/AFTER delta diagram, a worth-it ledger, a who-is-affected section, a where-it-lives decision, a `## Live gates` block and an answer to every declared planning lens; every premise about behavior outside the code cites its evidence or is listed as unverified; lint_plan.sh exits 0 on it; any delegate-plan-review --verify verdicts and the final-plan-check verdict are quoted, with an accept or reject recorded for each final-check item and skipped external reviews recorded; no approval was requested before those verdicts. Or this session has halted for the operator: its last message is a grilling question or a rejected-plan follow-up, with no operator reply yet. Or stop after 20 turns.
 
 The goal evaluator is binary: a halt satisfies the goal and clears it, which keeps it from pushing past a question that belongs to the operator. So print this goal line again when grilling ends, before step 4, and at the end of every step 9 wait, so the operator can re-pin it.
 
@@ -47,18 +47,31 @@ At either review checkpoint, accept a harness alone or with optional flags in th
 
 `final-plan-check` always runs. Quote each completed review's verdict in the plan file under `## Review trail`, distinguishing the design review, the later plan review, and the final check. Record skipped external reviews without inventing verdicts.
 
-**8. Mandatory blocks.** Before presenting the plan for approval, check the plan file has all of:
-- Worth-it ledger (what we gain, what we lose, the honest net; tokens per wake and wakes per day for anything unattended).
-- Blast radius (released vs unreleased surfaces, downstream operators, downstream hermits).
-- Where it lives (core vs plugin, or the project's equivalent boundary, as the project's CLAUDE.md defines it).
-- Harness premises: every claim about Claude Code behavior the plan rests on, each citing a PROBE_VERDICT line or marked "unprobed".
+Run `final-plan-check` in a fresh context, so it reads the plan the way an executor will: from the file alone. Make one Agent call and wait for its completion notification:
 
-A missing block is added now, from what the session already established; do not request approval without it, and do not pad a block with guesses. An unprobed premise stays labeled unprobed.
+    Agent(subagent_type: "general-purpose",
+          description: "final-plan-check on <plan file name>",
+          prompt: "Your cwd is <repo root>. Invoke the final-plan-check skill with the Skill tool
+                   on the plan at <absolute plan path>. That file is your only source for the ask
+                   and the decisions. Do not edit anything. Reply with the skill's output verbatim.")
+
+Then decide each item it returned. Mark every Cut / defer, Reconsider and Possibly missing item `accept` or `reject` with one line of reason, and record the list under `## Review trail`. Apply the accepted items to the plan file. Bring to the operator only the rejected items, and any accepted item that changes a decision the operator already made; ask before applying those.
+
+**8. Mandatory blocks.** Before presenting the plan for approval, check the plan file has all of:
+- Worth-it ledger (what we gain, what we lose, the honest net).
+- Who is affected (released versus unreleased surfaces, and the users, callers or deployments downstream).
+- Where it lives (the project's own boundary, as its instructions define it).
+- Premises about behavior outside the code: each cites its evidence (a probe result, a document, a test run) or is marked "unverified".
+- `## Live gates`, with `None.` when there are none.
+- An answer to every declared planning lens. The fresh-context check reports any it found unanswered.
+
+A missing block is added now, from what the session already established; do not request approval without it, and do not pad a block with guesses. An unverified premise stays labeled unverified. When the plan went through plan-implementation, run `bash <plan-implementation-skill-dir>/scripts/lint_plan.sh <plan-path>` and fix the plan until it exits 0. Never ask the operator about a lint failure.
 
 **9. One operator approval.** If plan mode is active, call ExitPlanMode once. Otherwise, present the plan and its path, ask for approval, and wait for the operator's reply. Then:
 - Approved: go to step 10.
 - Rejected with text: the text is an answer. Process it, edit the plan file, print what changed, and wait for the operator. Never request approval a second time without an operator reply in between. While a question is open, do not rewrite the plan beyond that answer.
 - Never type a slash command into a rejection. This skill invokes the next skill itself; the rejection channel is for the operator's words only.
+- Any edit to the plan after approval: apply it, rerun the lint and the fresh-context `final-plan-check` from step 7, and report both results before step 10. Do not ask first.
 
 **10. On approval, print the next move** and stop:
 
