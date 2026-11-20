@@ -41,10 +41,10 @@ For example:
 /delegate-ship grok @~/.claude/plans/123-fix-timeout.md
 ```
 
-- `plan-implementation` does not plan. It turns settled decisions into the `## Steps` and `## Closing verification` blocks that `delegate-ship` runs, so use it whenever a fresh context or another executor implements.
+- `plan-implementation` does not plan. It turns settled decisions into the `## Steps`, `## Closing verification` and `## Live gates` blocks, checked by `lint_plan.sh`, that `delegate-ship` runs, so use it whenever a fresh context or another executor implements.
 - `plan-pipeline` runs grilling, grounding, optional design review, `plan-implementation` when needed, optional handoff review, and the final check with one approval. Plan mode is optional. Both external reviews use `delegate-plan-review --verify`; include optional `--model` and `--effort` flags with the harness in your answer at either review checkpoint.
 - `delegate-ship` prints a `/goal` line; paste it so the session keeps going until the PR is open. If it stops to ask you, the goal ends; answer and paste the reprinted line.
-- Executors are `grok`, `codex`, `copilot`, or `claude`. `/delegate-plan status` checks a running delegation. `/delegate-plan` alone stops at verified, uncommitted changes; `/worktree-ship` has the current session implement instead.
+- Executors are `grok`, `codex`, `copilot`, or `claude`. `/delegate-plan status` checks a running delegation. `/delegate-plan` alone stops at verified, uncommitted changes; `/worktree-ship` has the current session implement instead. Personal defaults (model, effort, `max_resumes`) go in `~/.config/delegate-plan/config.json`.
 - `review-to-pr` runs `/code-review --fix` in a subagent with no session history, so there's no `/clear` and no second session. `--model <m>` picks the reviewer's model (default: the session's) and `--level` the review level (default `high`).
 - `/worktree-ship` ends with `review-to-pr`; `/worktree-ship --no-worktree` implements in the current checkout instead of a worktree.
 - In Codex, Grok CLI, and Copilot CLI, the review runs read-only in a separate CLI process: the host's own CLI by default, or another with `--reviewer claude|codex|grok|copilot`. The host checks each finding and applies the confirmed ones through `review-findings`.
@@ -63,6 +63,18 @@ Invoke skills as `/name` in Claude Code and Copilot CLI, or `$name` in Codex and
 - Other skills share instructions but depend on the host's tools. The installer does not enforce these limits.
 
 In Codex, Grok CLI, or Copilot CLI: `tackle-task`, draft a plan, `final-plan-check`, then `worktree-ship`.
+
+## Project and user sections
+
+The skills hold mechanisms only. Rules that belong to one project, or to one person, are declared outside this repo and read when a skill needs them.
+
+| Heading | What it holds | Read by |
+|---|---|---|
+| `## Planning lenses` | Questions every plan must answer | `final-plan-check`, `tackle-task` |
+| `## Verification rows` | "If the change touches X, also run Y" | `plan-implementation`, `worktree-ship` |
+| `## Executor environment` | Variables or command prefixes an external executor needs | `plan-implementation` |
+
+Put a heading in your user instructions for rules you want everywhere, in a project's `CLAUDE.md` or `AGENTS.md` for rules of that project, or in a file one of those points to. Every section is optional. A skill that finds none says so in one line and continues with its defaults.
 
 ## Skills
 
