@@ -37,16 +37,14 @@ Do not call `ExitPlanMode`, and do not nudge toward exiting. Deliver the critiqu
 
 **6. Unverified assumptions about external behavior.** A plan can pass everything above and still rest on a guess about how something outside the code behaves: a tool's return shape, a hook's input contract, an API/library response, what a command actually outputs. For each step ask: *does its correctness depend on behavior assumed but never confirmed?* Name each load-bearing guess and recommend confirming it **now**, a one-off call, a tmux session driving the real thing, because plan mode is the cheapest place to catch a false premise and mid-implementation is the most expensive. Don't flag well-established behavior (stdlib semantics, documented guarantees you've used before); flag the "I think it returns X" steps.
 
-**7. Operator gauntlet.** This operator reliably asks the same questions *after* seeing a plan. Pre-answer them now so the plan doesn't bounce. Each answer must cite the plan step or file that settles it; if the plan doesn't settle it, that item goes under `Possibly missing`, not into a hand-wave.
+**7. Standing questions.** A plan reliably gets the same questions after it is shown. Pre-answer them now so the plan doesn't bounce. Each answer must cite the plan step or file that settles it; if the plan doesn't settle it, that item goes under `Possibly missing`, not into a hand-wave.
 
-Current gate:
-- **Worth-it ledger**: what do we gain and what do we lose? Name the concrete gain, the concrete cost (files, hooks, maintenance surface), and the honest net.
-- **Operational cost**: if the plan adds anything that runs unattended (a hook, a routine, a loop, a watcher), state tokens per wake and wakes per day, each measured or labeled "estimate".
-- **Overlap**: what does the platform already do natively, and what do the named alternatives for this project do (the project's instructions name them)? If it overlaps, say why it is built here anyway.
-- **Where it lives**: core vs plugin, or the project's equivalent boundary. A plan that does not say is missing a decision.
-- **Show me the flow**: every option ships with the full option list and one example flow per audience. An option without a flow is not an option yet.
-- **Compatibility shims**: when the project ships as a research preview with no legacy-compatibility promise, name every dual-shape reader, one-release bridge or retirement window and either cut it or justify it as migration, not compatibility.
-- **Execution ceremony**: the number of delegations or waves and the executor choice follow the dependency order the plan actually has, not a parallelism the chosen executor will not use; state the count and why.
+Always:
+- **Worth it**: what do we gain and what do we lose? Name the concrete gain, the concrete cost (files, hooks, maintenance surface), and the honest net.
+- **Who is affected**: which users, callers or deployments see a change, and what each one sees before and after.
+- **Where it lives**: the project's own boundary, as its instructions define it (for example library versus application). A plan that does not say is missing a decision.
+
+Declared lenses: (**Declared sections.** A project or a user can declare `## Planning lenses`. Look for the heading in the instruction files loaded for this session, at user level and at project level (`CLAUDE.md`, `AGENTS.md`), and in any file one of them points to for that heading; read a pointed-to file before using it. When a section is declared nowhere, say so in one line and continue.) Answer every declared lens the same way as the three above.
 
 Standing four:
 - **Degenerate environments**, what happens in a non-git repo, an empty repo, or with a required tool missing? (The "what about a non git repo?" question.)
@@ -69,7 +67,7 @@ Reconsider:
 - [Step N / file X]: <concern>, because <reason>. Alternative: <instead, for unverified assumptions, the specific probe to run>.
 
 Possibly missing:
-- <case / layer / verification gap, incl. any unanswered operator-gauntlet item from step 7>, because <reason>.
+- <case / layer / verification gap, incl. any unanswered standing question or declared lens from step 7>, because <reason>.
 
 Looks right:
 - <what you actively checked, say what you opened or grepped, and judged sound>
@@ -95,4 +93,4 @@ The "no concerns" verdict is allowed and sometimes correct. It is not the defaul
 - No concern without a named location and a concrete alternative.
 - Don't restate the plan back at the user; they wrote it.
 
-Scale the review to the plan. Apply the operator gates where they affect a real decision; do not invent runtime costs or hypothetical failure cases for unrelated work. Respect the active harness's plan-editing permissions.
+Scale the review to the plan. Apply the standing questions and declared lenses where they affect a real decision; do not invent runtime costs or hypothetical failure cases for unrelated work. Respect the active harness's plan-editing permissions.
