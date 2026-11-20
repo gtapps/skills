@@ -14,7 +14,7 @@ Resolve `<name-skill-dir>` to the absolute installed directory of the named skil
 
 **1. Print the goal, resolve the inputs.** Print this line first so the operator can paste it:
 
-    /goal <PLAN> is shipped by delegate-ship: DELEGATE_DONE shown; the plan's Closing verification re-run by me in the worktree after the last commit (verify.sh table shown, every row exit 0); review-to-pr ran /code-review high --fix in an Opus subagent and re-verified; any finding that reverses a plan contract halted for a Yes and the plan file was edited; the PR URL is shown with a blast-radius section. Or this session has halted where delegate-ship requires the operator: its last message is the numbered unfixed-findings list, a contract-change question, or a red verification table, with no operator reply yet. Never reset --hard; on push rejection fetch, rebase, retest, retry. Or stop after 30 turns.
+    /goal <PLAN> is shipped by delegate-ship: DELEGATE_DONE shown; the plan's Closing verification re-run by me in the worktree after the last commit (verify.sh table shown, every row exit 0); session-owned live gates run with each result shown; review-to-pr ran /code-review high --fix in an Opus subagent and re-verified; any finding that reverses a plan contract halted for a Yes and the plan file was edited; the PR URL is shown with a blast-radius section. Or this session has halted where delegate-ship requires the operator: its last message is the numbered unfixed-findings list, a contract-change question, or a red verification table, with no operator reply yet. Never reset --hard; on push rejection fetch, rebase, retest, retry. Or stop after 30 turns.
 
 The goal evaluator is binary: a halt satisfies the goal and clears it, which keeps it from pushing past a decision that belongs to the operator. So every time you halt for the operator, end the message with this goal line again, so they can re-pin it with their answer.
 
@@ -28,7 +28,7 @@ delegate-plan's report closes with an operator menu and "do not review, stage, c
 
     bash <delegate-plan-skill-dir>/scripts/verify.sh <run-dir>
 
-and print its `<exit>  <command>` table verbatim. Every row comes from the plan's Closing verification block. A red row stops the pipeline here with the table shown; the executor's `result.json` claims are not evidence. Before step 4, independently confirm every plan step is complete and no stop or approval requirement remains unresolved. A stopped run, usage limit, or absent `result.json` does not establish completion, even when closing verification is green.
+and print its `<exit>  <command>` table verbatim. Every row comes from the plan's Closing verification block. A red row stops the pipeline here with the table shown; the executor's `result.json` claims are not evidence. Before step 4, independently confirm every plan step is complete and no stop or approval requirement remains unresolved. A stopped run, usage limit, or absent `result.json` does not establish completion, even when closing verification is green. Then run the plan's session-owned `## Live gates` and show each result. A gate that fails is classified first: run it in a throwaway worktree at the remote default branch, and attribute it to the change only when it passes there. Operator-owned gates are never run here: list them first in the step 5 report, and the PR stays a draft until the operator clears them.
 
 **4. Review and publish.** Invoke `review-to-pr --level high --model opus`. The executor may be a lower-effort or non-Claude harness, so the review runs on Opus whatever the session model is. Hand it:
 - the goal line from step 1 (review-to-pr prints none of its own);
@@ -40,8 +40,7 @@ When `result.json.notes` records `simplify: ran`, tell review-to-pr the cleanup 
     ## Blast radius
     - Released surfaces touched: ...
     - Unreleased surfaces touched: ...
-    - Downstream operators: ...
-    - Downstream hermits: ...
+    - Who is affected downstream (users, callers, deployments): ...
     - Per-actor ledger: executor <executor>[:<model>] <what it wrote> / code-review:opus <what it changed> / operator <what was decided>
 
 The executor's name and model come from the run's `freeze.json` (`executor`, `model`; omit the model when null), so a PR reviewer sees which harness and model wrote the code.
@@ -57,5 +56,5 @@ If the plan names an external protocol (a wire format, an MCP or HTTP contract, 
 - Never reset --hard. On a rejected push: fetch, rebase, re-run verify.sh, push again.
 - Don't reimplement `delegate-plan` or `review-to-pr`; invoke them.
 - Don't wait on the executor with sleep or status polls; the Monitor, or the agent completion for claude, wakes you.
-- This skill narrowly overrides delegate-plan's stopped-run rule when the approved plan and evidence determine exactly one answer (e.g. an under-counted table whose new rows can take only one label). Derive the complete answer before spending a resume, check that it fits the plan's Ask and Decisions, record it in the plan file, say so in one line, and resume with `--resume "<the answer>"` under delegate-plan's `resumes < 2` cap. This never overrides an explicit approval requirement, scope limit, or denied permission gate. If a real choice remains or the answer cannot be derived, halt for the operator.
-- GUEST_REPORT is not a step here. Sessions in a hermit-managed repo already receive that mandate from the project's startup context.
+- This skill narrowly overrides delegate-plan's stopped-run rule when the approved plan and evidence determine exactly one answer (e.g. an under-counted table whose new rows can take only one label). Derive the complete answer before spending a resume, check that it fits the plan's Ask and Decisions, record it in the plan file, say so in one line, and resume with `--resume "<the answer>"` under delegate-plan's resume cap. This never overrides an explicit approval requirement, scope limit, or denied permission gate. If a real choice remains or the answer cannot be derived, halt for the operator.
+- Reporting to another session is not a step here. When the project's startup context mandates one, follow that.

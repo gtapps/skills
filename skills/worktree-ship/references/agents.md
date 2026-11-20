@@ -34,7 +34,7 @@ Never edit files in the originating checkout after entering the worktree. Do not
 
 1. Follow the approved plan exactly. Do not add adjacent cleanup or speculative abstractions.
 2. Inspect only the relevant regions of large files. Preserve user changes and repository style.
-3. Run the verification commands named in the plan. Otherwise derive them from AGENTS.md, package scripts, build files, and CI configuration.
+3. Run the verification commands named in the plan. Otherwise derive them from AGENTS.md, package scripts, build files, and CI configuration. When the plan has no `## Closing verification` block, build the list yourself: this repository's documented test and typecheck commands, plus the command of every declared verification row whose trigger matches the diff. (**Declared sections.** A project or a user can declare `## Verification rows`. Look for the heading in the instruction files loaded for this session, at user level and at project level (`CLAUDE.md`, `AGENTS.md`), and in any file one of them points to for that heading; read a pointed-to file before using it. When a section is declared nowhere, say so in one line and continue.) Say in one line which commands you chose. Then run the plan's session-owned `## Live gates`, if it lists any, and show each result. Operator-owned gates are not yours to run: list them first in the report.
 4. Do not proceed to commit while a relevant check is red. Fix and rerun it, or report the genuine blocker.
 
 ## Publish
