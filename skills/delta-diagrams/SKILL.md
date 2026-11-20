@@ -41,7 +41,7 @@ plan ─> Q1 ─┬─ A ─> delta A  ◀ SELECTED ─> Q2 ─┬─ C ─> del
 
 ## Rules
 
-- **Deltas describe behavior**, never diffs or filenames. Write "watchdog now compacts at 150k tokens", not "edited hermit-watchdog.ts:517".
+- **Deltas describe behavior**, never diffs or filenames. Write "watchdog now compacts at 150k tokens", not "edited watchdog.ts:517".
 - **One diagram per decision point.** Don't cram unrelated decisions into one tree.
 - **End-of-task reports get one end-to-end before/after flow** summarizing the net behavioral change, even if the body has per-decision trees.
 - Mark the selected branch with `◀ SELECTED` (or `◀ CHOSEN`). Rejected branches stay in the diagram, the operator wants to see what was weighed, not just the winner.

@@ -141,11 +141,20 @@ Rewrite the plan file to this. Sections with nothing real in them are omitted, n
 ## Closing verification
 <the project spine, exact commands and expected exit>
 
+## Live gates
+<one line per gate: what to run or observe | owner: session or operator | needs: ...; or "None.">
+
 ## References
 <files as `path:line`, docs/URLs that informed the plan>
 ```
 
 Every line of the closing verification block must run as-is with `bash -c` inside the worktree: repeat a step's grep verbatim rather than referring to it by step number. `delegate-plan`'s `verify.sh` runs the block literally, and a prose line shows up as a red row.
+
+**Live gates are every check that `bash -c` in the worktree cannot run:** an eval suite, a run against a real deployment, a manual check on a device. List each under `## Live gates` as one line: what to run or observe, its owner, and what it needs. The owner is `session` when the gate stays inside the worktree or a scratch environment the session creates and removes. It is `operator` when the gate touches a live or production system, needs a credential, or needs a person or their device. Write `None.` when there are none. The heading is mandatory, so a missing block is never mistaken for a decision.
+
+**Declared rows and executor environment.** (**Declared sections.** A project or a user can declare `## Verification rows` and `## Executor environment`. Look for the heading in the instruction files loaded for this session, at user level and at project level (`CLAUDE.md`, `AGENTS.md`), and in any file one of them points to for that heading; read a pointed-to file before using it. When a section is declared nowhere, say so in one line and continue.) Add to the closing verification the command of every declared row whose trigger matches what this plan changes; a row that is not a `bash -c` command becomes a live gate. When another executor will run the plan, copy a declared `## Executor environment` into Ground rules verbatim and write the closing verification commands the way that section says to run them.
+
+Before reporting, run `bash <plan-implementation-skill-dir>/scripts/lint_plan.sh <plan-path>` and fix the plan until it exits 0.
 
 Report the plan location or return the replacement plan, its behavior delta, and the next applicable review step. Refer only to skills available in the active harness. Use its goal library when a goal suggestion is appropriate; do not activate a goal unless asked.
 

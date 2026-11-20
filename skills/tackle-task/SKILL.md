@@ -60,7 +60,7 @@ Use this structure:
     **Cost of doing nothing:** <specific consequence>
     ## Recommendation: <recommendation>
 
-For SHIP or SHIP WITH CAVEAT, append a minimal proposed approach, files to touch, and verification plan. When the verdict is Refined approach or Corrected scope, state every deviation from the source task as a table:
+For SHIP or SHIP WITH CAVEAT, append a minimal proposed approach, files to touch, and verification plan. For these two recommendations also answer each declared planning lens in one line, under a `## Lenses` heading placed before the proposed approach. (**Declared sections.** A project or a user can declare `## Planning lenses`. Look for the heading in the instruction files loaded for this session, at user level and at project level (`CLAUDE.md`, `AGENTS.md`), and in any file one of them points to for that heading; read a pointed-to file before using it. When a section is declared nowhere, say so in one line and continue.) When the verdict is Refined approach or Corrected scope, state every deviation from the source task as a table:
 
     | Source proposed | This plan does instead | Why |
     |---|---|---|

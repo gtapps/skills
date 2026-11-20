@@ -49,7 +49,7 @@ the branch slug.
   executor by `setup_run.sh`).
 - `result.schema.json`: the executor's final message shape (advisory; git is the evidence).
 - `config.json`: per-executor default `model` and `effort`, `null` meaning the harness
-  default. A flag on the invocation overrides it.
+  default. A flag on the invocation overrides it. A file at ${XDG_CONFIG_HOME:-~/.config}/delegate-plan/config.json overrides the tracked defaults key by key, including max_resumes (default 2), and is not touched by skill updates.
 - `scripts/finish_claude.sh <run-dir> <reply-file>`: the claude executor's stand-in for a
   driver's ending. Turns the subagent's final reply into `result.json` (when it parses),
   writes `git.json`, and prints the `DELEGATE_DONE executor=claude` line.
@@ -206,7 +206,7 @@ report in step 7.
   even when the plan's Verify literally names it). Anything git-writing or `gh` is out of
   scope by construction, so a block on one of those is a wrapper violation, not a
   missing permission: report it, never widen the gate. If in-plan and
-  `freeze.json.resumes < 2`, resume: run the driver with `--resume "<go-ahead naming the
+  `freeze.json.resumes < freeze.json.max_resumes`, resume: run the driver with `--resume "<go-ahead naming the
   command>"` under Monitor exactly as in step 5, then return here. Otherwise the outcome is
   "blocked, operator decides".
 
@@ -225,7 +225,7 @@ report in step 7.
   Only when those settle nothing, add a throwaway worktree at `grounded_sha`, run the
   executor's exact command there, remove the worktree. Red at base is a pre-existing flake,
   likeliest when `stop_reason` begins with `flaky?` (a red that did not reproduce on the
-  executor's own retry): say so and resume once, under the same `resumes < 2` cap. Green at
+  executor's own retry): say so and resume once, under the same `freeze.json.resumes < freeze.json.max_resumes` cap. Green at
   base implicates the diff: say the failure is unrelated by the plan but not by the evidence.
   If the command cannot run at base at all, which is common because a fresh worktree has no
   installed dependencies and the install step differs per stack, that is not evidence either
@@ -316,7 +316,7 @@ live in `config.json`, never in this file or the drivers.
 
 ## Suggested goal
 
-    /goal <PLAN-FILE> is delegated: freeze.json written, worktree HEAD shown equal to the grounded SHA, DELEGATE_DONE line shown, git.json shows a non-empty working tree and committed=false, the plan's closing verification re-run by me in the worktree and shown green with exit 0, files_touched printed and checked against the plan's Out of scope list, and the operator menu printed. Nothing staged, committed, pushed or PR'd by me; any DELEGATE_STALL line was surfaced with a PushNotification and waited out, never killed or resumed; any blocked status was judged against the plan and either resumed (resumes < 2) or surfaced; any stopped status carrying a failing command was re-run by me before reporting, then surfaced, and resumed only when it was a flaky? red the base-commit check exonerated. Or stop after 20 turns.
+    /goal <PLAN-FILE> is delegated: freeze.json written, worktree HEAD shown equal to the grounded SHA, DELEGATE_DONE line shown, git.json shows a non-empty working tree and committed=false, the plan's closing verification re-run by me in the worktree and shown green with exit 0, files_touched printed and checked against the plan's Out of scope list, and the operator menu printed. Nothing staged, committed, pushed or PR'd by me; any DELEGATE_STALL line was surfaced with a PushNotification and waited out, never killed or resumed; any blocked status was judged against the plan and either resumed (resumes < max_resumes) or surfaced; any stopped status carrying a failing command was re-run by me before reporting, then surfaced, and resumed only when it was a flaky? red the base-commit check exonerated. Or stop after 20 turns.
 
 ## Don't
 
@@ -327,7 +327,7 @@ live in `config.json`, never in this file or the drivers.
   verification are the evidence. That holds on a `stopped` too: never report an executor's
   red without running it yourself.
 - Don't resume a `stopped` run on your own, except a `flaky?` one the base-commit check
-  exonerated. Don't resume `blocked` past `resumes = 2` or for a command outside the plan.
+  exonerated. Don't resume `blocked` past `max_resumes` or for a command outside the plan.
 - Don't widen an executor's gate to let it commit, push, or use `gh`. If it asks, the
   wrapper's scope fence was breached.
 - Don't call `ExitWorktree`; the operator's next move happens in that worktree.

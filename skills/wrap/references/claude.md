@@ -1,6 +1,6 @@
 ---
 name: wrap
-description: Close an operator session on disk. Classify learnings verified vs idea and route them (personal memory, or the destination the project's instructions name), run the project's mandated close (proposal-act, GUEST_REPORT) and show its output, refresh the final-plan-check gauntlet with any question that bounced a plan this session, write the loose-ends line, give the plan file its issue name, print a five-line close. Trigger on "/wrap", "save learnings", "save this as a learning", "wrap this up", "wrap up", "close the session", and proactively before ending any session that produced a verdict, a plan, or a measurement. Do NOT use to commit or push (commit, commit-push), to open a PR (open-pr), or to write a handoff document for another agent (handoff).
+description: Close an operator session on disk. Classify learnings verified vs idea and route them (personal memory, or the destination the project's instructions name), run the project's mandated close and show its output, refresh the declared planning lenses with any question that bounced a plan this session, write the loose-ends line, give the plan file its issue name, print a five-line close. Trigger on "/wrap", "save learnings", "save this as a learning", "wrap this up", "wrap up", "close the session", and proactively before ending any session that produced a verdict, a plan, or a measurement. Do NOT use to commit or push (commit, commit-push), to open a PR (open-pr), or to write a handoff document for another agent (handoff).
 ---
 
 # wrap
@@ -21,13 +21,13 @@ Every number in what you write is measured (the command and output appear in the
 - No destination named by the project: memory only, and say so.
 
 **3. Project-mandated close.** Run whatever those same instructions mandate at the end of a session, and show the output of each:
-- A proposal verdict reached this session: run the project's proposal-act equivalent (in hermit repos, `/claude-code-hermit:proposal-act` accept, defer or dismiss). No verdict reached: no call, and do not invent one.
-- A guest report mandated by the startup context (in hermit repos, a `GUEST_REPORT:` line to the resident via SendMessage): send it. If the send is held for approval, also write it to the inbox file the instructions name, after checking that the path exists, and say which happened.
+- A proposal verdict reached this session: when the project's instructions name a command for acting on it, run that command (accept, defer or dismiss). No verdict reached: no call, and do not invent one.
+- A report to another session mandated by the startup context: send it the way the instructions say. If the send is held for approval, also write it to the inbox file the instructions name, after checking that the path exists, and say which happened.
 - Anything else the instructions list for session close (a progress-log entry, a session-close skill): run it.
 
 Nothing mandated (a plain repo, a scratch directory): say "no project close mandated" and move on.
 
-**4. Refresh the gauntlet.** If the operator bounced a plan this session with a question that is not already in step 7 of `<final-plan-check-skill-dir>/SKILL.md`, append it to that step's "Current gate" list in generic wording (no project names), and show the diff. No bounce, or the question is already there: skip, say nothing.
+**4. Refresh the planning lenses.** If the operator bounced a plan this session with a question that neither step 7 of `<final-plan-check-skill-dir>/SKILL.md` nor any declared `## Planning lenses` section already asks, append it in generic wording (no project names) to the user-level `## Planning lenses` section, in the file the user instructions point to for that heading, and show the diff. When that section lives only in a `CLAUDE.md`, or is declared nowhere, print the question as a suggested lens instead of editing. No bounce, or the question is already there: skip, say nothing.
 
 **5. Loose ends.** One line, always present:
 
@@ -48,6 +48,6 @@ Then stop.
 ## Rules
 
 - Never commits, never pushes. If step 2 or 3 left files in a git working tree, that shows up in the loose-ends line.
-- Never edits a `CLAUDE.md` or `CLAUDE.local.md`; the gauntlet append in step 4 is the only skill file this skill touches.
+- Never edits a `CLAUDE.md` or `CLAUDE.local.md`; the lens append in step 4 is the only instruction file this skill touches.
 - Never writes an idea as a fact, a guess as a measurement, or a verdict that was not reached.
-- Everything written is shown: file paths for memory and knowledge files, command output for the mandated close, the diff for the gauntlet append.
+- Everything written is shown: file paths for memory and knowledge files, command output for the mandated close, the diff for the lens append.

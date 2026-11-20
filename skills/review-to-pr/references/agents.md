@@ -43,14 +43,22 @@ Read and follow `<review-findings-skill-dir>/SKILL.md` on `<dir>/findings.md` in
 
 Then show `git diff --stat <review-start>` and re-run the verification commands.
 - Red after the fixes: stop with the output and the diff. The user decides whether to keep or revert.
-- Findings marked Needs investigation: list them numbered and stop. The user answers "1. agree 2. skip, because ...". Apply the agreed ones, re-verify, continue.
-- A finding that reverses a contract in an approved plan (a step's behavior, a verify command, the scope fence): stop for an explicit yes, record the new contract in the plan file, then continue.
+- Findings marked Needs investigation, with an approved plan in context: check each against the plan's Decisions, Ground rules and Out of scope. When the plan settles it, do what the plan says (fix it or leave it) and record one line: the finding, the plan line that settles it, what you did. Do not ask.
+- Fixes that correct a class of mistake (a fixture assumption, a missing guard, a wrong path form): search the repository for the same shape, and fix or list every other hit before re-verifying.
+- Findings the plan does not settle: do not stop here. Give each a recommendation (fix or skip, with the reason) and carry them to Publish as `Decisions needed`.
+- A fix the review applied that reverses a contract in an approved plan (a step's behavior, a verify command, the scope fence): neither commit it nor discard it. When it touches only files no other fix touches, hold those files back (`git stash push -u -m "review-to-pr-held-<branch>" -- <paths>`, then keep that entry's SHA from `git stash list --format='%H %gs'`; the stash stack is shared with other worktrees, so never a bare `git stash pop`), re-verify the tree that will be committed, make Publish step 1's commit now, then `git stash apply <sha>` and drop that entry, and carry it to Publish as `Decisions needed`. Those paths stay out of every later commit until the user answers. When it cannot be separated by file, halt here for an explicit Yes and record the new contract in the plan file, as before.
 
 ## Publish
 
 1. If the fixes changed files, commit them through the commit skill, skipping its cleanup pass: the implementation commit already had one.
 2. Immediately before any push, run the repository's documented pre-push gate if it has one (a release lock, a migration, schema or changelog check). A hold means report what the gate said and don't push. Never bypass or remove a gate.
 3. Resume the open-pr skill at Phase C with the context from Phase A. It pushes, and it creates the PR or returns the one that already exists. The PR body names the reviewer CLI and model, and lists the findings with their verdicts.
+4. With any `Decisions needed` item, or an operator-owned gate still open in the plan's `## Live gates`, ask the open-pr skill for a draft PR when you resume it in step 3 (when it returns an existing PR that is not a draft, run `gh pr ready --undo <url>`) and add this section to the body:
+
+       ## Decisions needed
+       - D1: <finding or held-back fix>. Recommend: <fix | skip | accept the contract change>, because <reason>. If yes: <exact action>. If no: <exact action>.
+
+   Then halt with the PR URL and that list. On the user's answer: apply it (commit the held files or restore them, apply or drop a finding), record an accepted contract change in the plan file, re-verify, push, and run `gh pr ready` once no item and no operator-owned gate is open.
 
 ## Report
 
